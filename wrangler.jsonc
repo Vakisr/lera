@@ -1,0 +1,21 @@
+/**
+ * Cloudflare Worker config for the LERA pre-screening Next.js app.
+ * Built via @opennextjs/cloudflare, which emits .open-next/worker.js
+ * and the matching .open-next/assets directory.
+ *
+ * Docs: https://opennext.js.org/cloudflare
+ */
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lera",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-04-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

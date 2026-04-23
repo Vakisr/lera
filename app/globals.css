@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: #fff7ef;
+  color: #0b241a;
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Shared focus ring, matching the soft focus shadow used across buttons and inputs. */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 216, 117, 0.3);
+  border-radius: 12px;
+}
+
+/* Age slider: green gradient that deepens from mint (18) to forest (85+).
+   We render the fill in JS via an inline background, but the thumb styling
+   lives here so it picks up the custom dynamic color via a CSS variable. */
+input[type="range"].lera-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 36px;
+}
+input[type="range"].lera-slider::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--slider-track, #dcf7e7);
+}
+input[type="range"].lera-slider::-moz-range-track {
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--slider-track, #dcf7e7);
+}
+input[type="range"].lera-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin-top: -9px;
+  border-radius: 9999px;
+  background: var(--slider-thumb, #00d875);
+  border: 3px solid #fff7ef;
+  box-shadow: 0 2px 8px rgba(11, 36, 26, 0.18);
+  cursor: grab;
+  transition: transform 120ms ease-out;
+}
+input[type="range"].lera-slider::-webkit-slider-thumb:active {
+  transform: scale(1.1);
+  cursor: grabbing;
+}
+input[type="range"].lera-slider::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--slider-thumb, #00d875);
+  border: 3px solid #fff7ef;
+  box-shadow: 0 2px 8px rgba(11, 36, 26, 0.18);
+  cursor: grab;
+}
+
+/* Warm cream background with a soft green wash at the top and a coral breath
+   at the bottom-right. Matches the staging site's editorial feel. */
+.lera-bg {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(0, 216, 117, 0.14), transparent 60%),
+    radial-gradient(800px 400px at 90% 110%, rgba(228, 111, 77, 0.06), transparent 60%),
+    #fff7ef;
+}
+
+/* Hide number input spinners (for the age field, if we ever fall back) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
