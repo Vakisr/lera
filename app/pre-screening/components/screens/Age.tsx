@@ -12,9 +12,10 @@ type Props = {
   value: number;
   onChange: (v: number) => void;
   onNext: () => void;
+  forHer?: boolean;
 };
 
-export function Age({ value, onChange, onNext }: Props) {
+export function Age({ value, onChange, onNext, forHer = false }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [text, setText] = useState(String(value));
 
@@ -60,7 +61,7 @@ export function Age({ value, onChange, onNext }: Props) {
 
   return (
     <Screen>
-      <ScreenHeading>How old are you?</ScreenHeading>
+      <ScreenHeading>{forHer ? "How old is she?" : "How old are you?"}</ScreenHeading>
       <form className="mt-10 space-y-6" onSubmit={submit}>
         <TextInput
           ref={ref}

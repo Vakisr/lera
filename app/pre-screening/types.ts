@@ -29,6 +29,10 @@ export const SOMETHING_ELSE_ID: SymptomId = "something_else";
 
 export type PreScreeningState = {
   gender?: Gender;
+  // Set only when gender is "not_woman" and the buyer is purchasing on behalf
+  // of a woman in their life. Flips downstream copy from "you/your" to
+  // "she/her" and collects her details rather than the buyer's.
+  orderingForLovedOne?: YesNo;
   feelLikeSelf?: FeelLikeSelf;
   symptoms: SymptomId[];
   symptomOther: string;
@@ -46,6 +50,7 @@ export type PreScreeningState = {
 // captures; everyone else completes the full flow and qualifies.
 export type PreScreeningPayload = {
   gender: Gender;
+  orderingForLovedOne?: YesNo;
   feelLikeSelf: FeelLikeSelf;
   symptoms: SymptomId[];
   symptomOther?: string;
@@ -60,7 +65,7 @@ export type PreScreeningPayload = {
   completedAt: string;
 };
 
-export type LeadReason = "android" | "location";
+export type LeadReason = "android" | "location" | "men";
 
 export type LeadListPayload = {
   email: string;
@@ -91,6 +96,7 @@ export const QUALIFIED_STEPS = [
 export type StepId =
   | (typeof QUALIFIED_STEPS)[number]
   | "gender-reject"
+  | "men-lead"
   | "device-lead"
   | "location-lead-state"
   | "insurance-notice";
@@ -98,6 +104,7 @@ export type StepId =
 export const HIDE_PROGRESS_ON: StepId[] = [
   "welcome",
   "gender-reject",
+  "men-lead",
   "device-lead",
   "location-lead-state",
   "success",

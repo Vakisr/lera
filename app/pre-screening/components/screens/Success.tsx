@@ -5,6 +5,7 @@ import { Screen, ScreenHeading } from "../Screen";
 
 type Props = {
   firstName: string;
+  forHer?: boolean;
 };
 
 // Stripe Checkout session for the qualified-lead handoff. Hardcoded for now
@@ -27,7 +28,7 @@ const MONTHLY_BULLETS = [
   "Expert-led content, workshops and community access",
 ];
 
-export function Success({ firstName }: Props) {
+export function Success({ firstName, forHer = false }: Props) {
   const goToCheckout = () => {
     window.location.href = STRIPE_CHECKOUT_URL;
   };
@@ -35,7 +36,9 @@ export function Success({ firstName }: Props) {
   return (
     <Screen center={false}>
       <ScreenHeading>
-        Thanks for taking ownership of how you feel, {firstName}.
+        {forHer
+          ? `Thanks for looking out for ${firstName}.`
+          : `Thanks for taking ownership of how you feel, ${firstName}.`}
       </ScreenHeading>
 
       <p className="mt-8 text-lg text-forest/80">

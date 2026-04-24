@@ -139,11 +139,16 @@ export default function PreScreeningPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [back]);
 
+  const forHer = state.orderingForLovedOne === "yes";
+
   const submitQualified = async () => {
     const includesOther = state.symptoms.includes(SOMETHING_ELSE_ID);
     const other = state.symptomOther.trim();
     const payload: PreScreeningPayload = {
       gender: state.gender!,
+      ...(state.orderingForLovedOne
+        ? { orderingForLovedOne: state.orderingForLovedOne }
+        : {}),
       feelLikeSelf: state.feelLikeSelf!,
       symptoms: state.symptoms,
       ...(includesOther && other ? { symptomOther: other } : {}),
@@ -215,7 +220,30 @@ export default function PreScreeningPage() {
         );
 
       case "gender-reject":
-        return <GenderReject key="gender-reject" />;
+        return (
+          <GenderReject
+            key="gender-reject"
+            onAnswer={(v: YesNo) => {
+              setState((s) => ({ ...s, orderingForLovedOne: v }));
+              // Yes: continue the full flow, rephrasing downstream copy in the
+              // "her" voice. No: we already captured the buyer's email at the
+              // very start, so the men-lead screen just auto-submits it.
+              goTo(v === "yes" ? "transition" : "men-lead");
+            }}
+          />
+        );
+
+      case "men-lead":
+        return (
+          <LeadCapture
+            key="men-lead"
+            heading="We’ll tell you when LERA opens up for men."
+            body="We’re working on a specific offering for men. We’ll use the email you gave us to let you know the moment it’s ready."
+            cta="Keep me posted"
+            reason="men"
+            prefilledEmail={state.email}
+          />
+        );
 
       case "transition":
         return (
@@ -234,6 +262,7 @@ export default function PreScreeningPage() {
               setState((s) => ({ ...s, feelLikeSelf: v }));
               goTo("symptom-multi");
             }}
+            forHer={forHer}
           />
         );
 
@@ -250,11 +279,14 @@ export default function PreScreeningPage() {
               setState((s) => ({ ...s, symptomOther: v }))
             }
             onContinue={() => goTo("pivot")}
+            forHer={forHer}
           />
         );
 
       case "pivot":
-        return <Pivot key="pivot" onNext={() => goTo("device")} />;
+        return (
+          <Pivot key="pivot" onNext={() => goTo("device")} forHer={forHer} />
+        );
 
       case "device":
         return (
@@ -265,6 +297,7 @@ export default function PreScreeningPage() {
               setState((s) => ({ ...s, device: d }));
               goTo(d === "iphone" ? "location" : "device-lead");
             }}
+            forHer={forHer}
           />
         );
 
@@ -292,6 +325,7 @@ export default function PreScreeningPage() {
               if (code === "NY" || code === "NJ") goTo("location-lead-state");
               else goTo("age");
             }}
+            forHer={forHer}
           />
         );
 
@@ -315,6 +349,7 @@ export default function PreScreeningPage() {
             value={state.age}
             onChange={(v) => setState((s) => ({ ...s, age: v }))}
             onNext={() => goTo("insurance")}
+            forHer={forHer}
           />
         );
 
@@ -327,6 +362,7 @@ export default function PreScreeningPage() {
               setState((s) => ({ ...s, medicareMedicaid: v }));
               goTo(v === "yes" ? "insurance-notice" : "first-name");
             }}
+            forHer={forHer}
           />
         );
 
@@ -335,6 +371,7 @@ export default function PreScreeningPage() {
           <InsuranceNotice
             key="insurance-notice"
             onContinue={() => goTo("first-name")}
+            forHer={forHer}
           />
         );
 
@@ -345,6 +382,7 @@ export default function PreScreeningPage() {
             value={state.firstName}
             onChange={(v) => setState((s) => ({ ...s, firstName: v }))}
             onNext={() => goTo("last-name")}
+            forHer={forHer}
           />
         );
 
@@ -355,11 +393,18 @@ export default function PreScreeningPage() {
             value={state.lastName}
             onChange={(v) => setState((s) => ({ ...s, lastName: v }))}
             onNext={submitQualified}
+            forHer={forHer}
           />
         );
 
       case "success":
-        return <Success key="success" firstName={state.firstName || "there"} />;
+        return (
+          <Success
+            key="success"
+            firstName={state.firstName || "there"}
+            forHer={forHer}
+          />
+        );
 
       default:
         return null;

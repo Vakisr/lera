@@ -1,40 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { PrimaryButton } from "../PrimaryButton";
+import { ChoiceButtons } from "../ChoiceButtons";
 import { Screen, ScreenHeading, ScreenSub } from "../Screen";
+import type { YesNo } from "../../types";
 
-export function GenderReject() {
-  const [copied, setCopied] = useState(false);
+type Props = {
+  onAnswer: (v: YesNo) => void;
+};
 
-  const share = async () => {
-    const url =
-      typeof window !== "undefined" ? window.location.origin : "https://lerahealth.com";
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2400);
-    } catch {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2400);
-    }
-  };
-
+export function GenderReject({ onAnswer }: Props) {
   return (
     <Screen>
-      <ScreenHeading>LERA is for women.</ScreenHeading>
+      <ScreenHeading>LERA is built for women today.</ScreenHeading>
       <ScreenSub>
-        Our diagnostics are built around women&apos;s biology. If you know a woman in your
-        life who might benefit, we&apos;d love for you to share LERA with her.
+        We&rsquo;re working on a specific offering for men, but right now it&rsquo;s
+        only for women.
       </ScreenSub>
-      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <PrimaryButton onClick={share}>Share LERA</PrimaryButton>
-        <PrimaryButton variant="ghost" onClick={() => (window.location.href = "/")}>
-          Close
-        </PrimaryButton>
-      </div>
-      <div className="mt-4 h-5 text-sm text-leaf-600" aria-live="polite">
-        {copied ? "Link copied to clipboard." : ""}
+      <p className="mt-8 text-lg text-forest sm:text-xl">
+        Are you ordering this for a loved one?
+      </p>
+      <div className="mt-6">
+        <ChoiceButtons<YesNo>
+          onSelect={onAnswer}
+          options={[
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+          ]}
+        />
       </div>
     </Screen>
   );

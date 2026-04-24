@@ -4,13 +4,25 @@ import { motion } from "framer-motion";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen } from "../Screen";
 
-const paragraphs = [
-  "These feelings aren't \u201Cjust life.\u201D And they aren't in your head.",
-  "LERA runs a full biomarker diagnostic designed specifically for women to understand what's actually happening in your body. We use this data to build a plan that adapts to you.",
-  "You've been listening to your body. We'll help you understand what it's been saying.",
+const paragraphsSelf = [
+  "These feelings aren’t “just life.” And they aren’t in your head.",
+  "LERA runs a full biomarker diagnostic designed specifically for women to understand what’s actually happening in your body. We use this data to build a plan that adapts to you.",
+  "You’ve been listening to your body. We’ll help you understand what it’s been saying.",
 ];
 
-export function Pivot({ onNext }: { onNext: () => void }) {
+const paragraphsHer = [
+  "What she’s feeling isn’t “just life.” And it isn’t in her head.",
+  "LERA runs a full biomarker diagnostic designed specifically for women to understand what’s actually happening in her body. We use this data to build a plan that adapts to her.",
+  "You’ve been listening to her. We’ll help you both understand what her body has been saying.",
+];
+
+type Props = {
+  onNext: () => void;
+  forHer?: boolean;
+};
+
+export function Pivot({ onNext, forHer = false }: Props) {
+  const paragraphs = forHer ? paragraphsHer : paragraphsSelf;
   return (
     <Screen>
       <div className="space-y-6 text-lg leading-relaxed text-forest/90 sm:text-xl">
@@ -36,7 +48,7 @@ export function Pivot({ onNext }: { onNext: () => void }) {
         className="mt-10"
       >
         <PrimaryButton onClick={onNext} autoFocus>
-          I&rsquo;d like to try it
+          {forHer ? "Continue for her" : "I’d like to try it"}
         </PrimaryButton>
       </motion.div>
     </Screen>

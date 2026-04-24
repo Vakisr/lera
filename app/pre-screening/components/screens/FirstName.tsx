@@ -9,9 +9,10 @@ type Props = {
   value: string;
   onChange: (v: string) => void;
   onNext: () => void;
+  forHer?: boolean;
 };
 
-export function FirstName({ value, onChange, onNext }: Props) {
+export function FirstName({ value, onChange, onNext, forHer = false }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -23,7 +24,9 @@ export function FirstName({ value, onChange, onNext }: Props) {
 
   return (
     <Screen>
-      <ScreenHeading>What&rsquo;s your first name?</ScreenHeading>
+      <ScreenHeading>
+        {forHer ? "What’s her first name?" : "What’s your first name?"}
+      </ScreenHeading>
       <form
         className="mt-10 space-y-6"
         onSubmit={(e) => {
@@ -33,8 +36,8 @@ export function FirstName({ value, onChange, onNext }: Props) {
       >
         <TextInput
           ref={ref}
-          autoComplete="given-name"
-          placeholder="First name"
+          autoComplete={forHer ? "off" : "given-name"}
+          placeholder={forHer ? "Her first name" : "First name"}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

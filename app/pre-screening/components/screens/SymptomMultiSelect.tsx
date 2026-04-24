@@ -15,6 +15,7 @@ type Props = {
   otherText: string;
   onOtherTextChange: (v: string) => void;
   onContinue: () => void;
+  forHer?: boolean;
 };
 
 export function SymptomMultiSelect({
@@ -23,6 +24,7 @@ export function SymptomMultiSelect({
   otherText,
   onOtherTextChange,
   onContinue,
+  forHer = false,
 }: Props) {
   const otherRef = useRef<HTMLInputElement>(null);
   const showOther = value.includes(SOMETHING_ELSE_ID);
@@ -61,7 +63,11 @@ export function SymptomMultiSelect({
 
   return (
     <Screen wide>
-      <ScreenHeading>Which of these sound familiar?</ScreenHeading>
+      <ScreenHeading>
+        {forHer
+          ? "Which of these sound familiar for her?"
+          : "Which of these sound familiar?"}
+      </ScreenHeading>
       <ScreenSub>Pick any that apply.</ScreenSub>
 
       <div className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -92,7 +98,11 @@ export function SymptomMultiSelect({
         <div className="mt-5">
           <TextInput
             ref={otherRef}
-            placeholder="Tell us what you’re noticing"
+            placeholder={
+              forHer
+                ? "Tell us what she’s noticing"
+                : "Tell us what you’re noticing"
+            }
             value={otherText}
             onChange={(e) => onOtherTextChange(e.target.value)}
             onKeyDown={(e) => {
@@ -101,7 +111,7 @@ export function SymptomMultiSelect({
                 onContinue();
               }
             }}
-            aria-label="Describe your symptom"
+            aria-label={forHer ? "Describe her symptom" : "Describe your symptom"}
           />
         </div>
       )}

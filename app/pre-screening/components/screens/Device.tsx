@@ -7,12 +7,15 @@ import type { Device as DeviceT } from "../../types";
 type Props = {
   value?: DeviceT;
   onSelect: (d: DeviceT) => void;
+  forHer?: boolean;
 };
 
-export function Device({ value, onSelect }: Props) {
+export function Device({ value, onSelect, forHer = false }: Props) {
   return (
     <Screen>
-      <ScreenHeading>What phone do you use?</ScreenHeading>
+      <ScreenHeading>
+        {forHer ? "What phone does she use?" : "What phone do you use?"}
+      </ScreenHeading>
       <ScreenSub>LERA is on iPhone today. Android is on the way.</ScreenSub>
       <div className="mt-10">
         <ChoiceButtons<DeviceT>
