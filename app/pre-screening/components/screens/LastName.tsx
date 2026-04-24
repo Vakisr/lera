@@ -4,14 +4,16 @@ import { useEffect, useRef } from "react";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading } from "../Screen";
 import { TextInput } from "../TextInput";
+import type { OrderingFor } from "../../types";
 
 type Props = {
   value: string;
   onChange: (v: string) => void;
   onNext: () => void;
+  orderingFor: OrderingFor;
 };
 
-export function LastName({ value, onChange, onNext }: Props) {
+export function LastName({ value, onChange, onNext, orderingFor }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   useEffect(() => {
     ref.current?.focus();
@@ -21,9 +23,12 @@ export function LastName({ value, onChange, onNext }: Props) {
     if (value.trim()) onNext();
   };
 
+  const heading =
+    orderingFor === "loved_one" ? "And her last name?" : "And your last name?";
+
   return (
     <Screen>
-      <ScreenHeading>And your last name?</ScreenHeading>
+      <ScreenHeading>{heading}</ScreenHeading>
       <form
         className="mt-10 space-y-6"
         onSubmit={(e) => {
@@ -33,7 +38,7 @@ export function LastName({ value, onChange, onNext }: Props) {
       >
         <TextInput
           ref={ref}
-          autoComplete="family-name"
+          autoComplete={orderingFor === "loved_one" ? "off" : "family-name"}
           placeholder="Last name"
           value={value}
           onChange={(e) => onChange(e.target.value)}

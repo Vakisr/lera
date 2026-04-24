@@ -8,13 +8,12 @@ import { Screen, ScreenHeading, ScreenSub } from "../Screen";
 type Props = {
   value: string;
   onChange: (v: string) => void;
-  onSubmit: () => void | Promise<void>;
+  onNext: () => void;
 };
 
-export function Email({ value, onChange, onSubmit }: Props) {
+export function Email({ value, onChange, onNext }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [touched, setTouched] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     ref.current?.focus();
@@ -23,23 +22,20 @@ export function Email({ value, onChange, onSubmit }: Props) {
   const valid = isValidEmail(value);
   const showError = touched && !valid && value.length > 0;
 
-  const handle = async (e: React.FormEvent) => {
+  const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!valid || submitting) return;
-    setSubmitting(true);
-    try {
-      await onSubmit();
-    } finally {
-      setSubmitting(false);
-    }
+    if (!valid) return;
+    onNext();
   };
 
   return (
     <Screen>
-      <ScreenHeading>Where can we reach you?</ScreenHeading>
-      <ScreenSub>We&apos;ll send a short email to confirm next steps. No spam, ever.</ScreenSub>
-      <form className="mt-10 space-y-6" onSubmit={handle}>
+      <ScreenHeading>What&rsquo;s your email?</ScreenHeading>
+      <ScreenSub>
+        So we can stay in touch if life interrupts before you&rsquo;re done. No spam, ever.
+      </ScreenSub>
+      <form className="mt-10 space-y-6" onSubmit={submit}>
         <EmailInput
           ref={ref}
           placeholder="you@example.com"
@@ -51,8 +47,8 @@ export function Email({ value, onChange, onSubmit }: Props) {
         <div className="h-5 text-sm text-coral" aria-live="polite">
           {showError ? "That email doesn't look quite right." : ""}
         </div>
-        <PrimaryButton type="submit" disabled={!valid || submitting}>
-          {submitting ? "Sending\u2026" : "Finish"}
+        <PrimaryButton type="submit" disabled={!valid}>
+          Continue
         </PrimaryButton>
       </form>
     </Screen>

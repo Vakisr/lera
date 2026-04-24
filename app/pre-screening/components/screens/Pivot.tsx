@@ -3,14 +3,29 @@
 import { motion } from "framer-motion";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen } from "../Screen";
+import type { OrderingFor } from "../../types";
 
-const paragraphs = [
+const SELF_PARAGRAPHS = [
   "These feelings aren't \u201Cjust life.\u201D And they aren't in your head.",
   "LERA runs a full biomarker diagnostic designed specifically for women to understand what's actually happening in your body. We use this data to build a plan that adapts to you.",
   "You've been listening to your body. We'll help you understand what it's been saying.",
 ];
 
-export function Pivot({ onNext }: { onNext: () => void }) {
+const LOVED_ONE_PARAGRAPHS = [
+  "These feelings aren't \u201Cjust life.\u201D And they aren't in her head.",
+  "LERA runs a full biomarker diagnostic designed specifically for women to understand what's actually happening in her body. We use this data to build a plan that adapts to her.",
+  "She's been listening to her body. We'll help her understand what it's been saying.",
+];
+
+type Props = {
+  onNext: () => void;
+  orderingFor: OrderingFor;
+};
+
+export function Pivot({ onNext, orderingFor }: Props) {
+  const paragraphs =
+    orderingFor === "loved_one" ? LOVED_ONE_PARAGRAPHS : SELF_PARAGRAPHS;
+
   return (
     <Screen>
       <div className="space-y-6 text-lg leading-relaxed text-forest/90 sm:text-xl">

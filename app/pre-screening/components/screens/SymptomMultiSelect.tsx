@@ -1,25 +1,49 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { LetterBadge } from "../ChoiceButtons";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading, ScreenSub } from "../Screen";
-import { SYMPTOM_OPTIONS, type SymptomId } from "../../types";
+import {
+  SYMPTOM_OPTIONS,
+  symptomLabel,
+  type OrderingFor,
+  type SymptomId,
+} from "../../types";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
 
 type Props = {
   value: SymptomId[];
+  otherText: string;
   onChange: (next: SymptomId[]) => void;
+  onOtherTextChange: (v: string) => void;
   onContinue: () => void;
+  orderingFor: OrderingFor;
 };
 
-export function SymptomMultiSelect({ value, onChange, onContinue }: Props) {
+export function SymptomMultiSelect({
+  value,
+  otherText,
+  onChange,
+  onOtherTextChange,
+  onContinue,
+  orderingFor,
+}: Props) {
+  const otherSelected = value.includes("other");
+  const otherInputRef = useRef<HTMLInputElement>(null);
+
   const toggle = (id: SymptomId) => {
     onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
   };
 
-  // Keyboard: A..K toggles the matching option, Enter continues.
+  // Reveal-and-focus the free-text input the moment "Something else" toggles on.
+  useEffect(() => {
+    if (otherSelected) otherInputRef.current?.focus();
+  }, [otherSelected]);
+
+  // Keyboard: letters A..H toggle matching option, Enter continues.
+  // Skipped while focus is in the "Something else" text input so typing works.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -37,13 +61,17 @@ export function SymptomMultiSelect({ value, onChange, onContinue }: Props) {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // onContinue and value captured via closure; re-bind when they change.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, onContinue]);
 
+  const heading =
+    orderingFor === "loved_one"
+      ? "Which of these sound familiar for her?"
+      : "Which of these sound familiar?";
+
   return (
     <Screen wide>
-      <ScreenHeading>Which of these sound familiar?</ScreenHeading>
+      <ScreenHeading>{heading}</ScreenHeading>
       <ScreenSub>Pick any that apply.</ScreenSub>
 
       <div className="mt-8 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
@@ -63,12 +91,30 @@ export function SymptomMultiSelect({ value, onChange, onContinue }: Props) {
               ].join(" ")}
             >
               <LetterBadge letter={LETTERS[i]} active={active} />
-              <span className="flex-1">{opt.label}</span>
+              <span className="flex-1">{symptomLabel(opt.id, orderingFor)}</span>
               <Checkmark active={active} />
             </button>
           );
         })}
       </div>
+
+      {otherSelected && (
+        <div className="mt-4">
+          <input
+            ref={otherInputRef}
+            type="text"
+            maxLength={140}
+            value={otherText}
+            onChange={(e) => onOtherTextChange(e.target.value)}
+            placeholder={
+              orderingFor === "loved_one"
+                ? "Tell us what she\u2019s noticed"
+                : "Tell us what you\u2019ve noticed"
+            }
+            className="w-full rounded-xl2 border border-forest/15 bg-cream px-5 py-4 text-base text-forest placeholder:text-forest/40 focus:border-leaf-600 min-h-[52px]"
+          />
+        </div>
+      )}
 
       <div className="mt-8 flex items-center gap-4">
         <PrimaryButton onClick={onContinue} autoFocus>

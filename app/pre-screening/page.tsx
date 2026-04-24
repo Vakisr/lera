@@ -12,11 +12,12 @@ import { Device } from "./components/screens/Device";
 import { Email } from "./components/screens/Email";
 import { FirstName } from "./components/screens/FirstName";
 import { Gender } from "./components/screens/Gender";
-import { GenderReject } from "./components/screens/GenderReject";
 import { Insurance } from "./components/screens/Insurance";
+import { InsuranceInfo } from "./components/screens/InsuranceInfo";
 import { LastName } from "./components/screens/LastName";
 import { LeadCapture } from "./components/screens/LeadCapture";
 import { Location } from "./components/screens/Location";
+import { LovedOne } from "./components/screens/LovedOne";
 import { Pivot } from "./components/screens/Pivot";
 import { Success } from "./components/screens/Success";
 import { SymptomMultiSelect } from "./components/screens/SymptomMultiSelect";
@@ -26,11 +27,13 @@ import { Welcome } from "./components/screens/Welcome";
 
 import {
   HIDE_PROGRESS_ON,
+  OUTSIDE_US,
   QUALIFIED_STEPS,
   stateName,
   type Device as DeviceT,
   type FeelLikeSelf,
   type Gender as GenderT,
+  type OrderingFor,
   type PreScreeningPayload,
   type PreScreeningState,
   type StepId,
@@ -39,11 +42,12 @@ import {
 } from "./types";
 
 const initialState: PreScreeningState = {
+  email: "",
   symptoms: [],
+  otherSymptomText: "",
   age: 35,
   firstName: "",
   lastName: "",
-  email: "",
 };
 
 export default function PreScreeningPage() {
@@ -59,18 +63,14 @@ export default function PreScreeningPage() {
     setHistory((h) => (h.length > 1 ? h.slice(0, -1) : h));
   }, []);
 
-  // Keep a ref of the live history so the popstate handler below can read the
-  // latest length without re-binding the listener on every step change.
   const historyRef = useRef(history);
   useEffect(() => {
     historyRef.current = history;
   }, [history]);
 
-  // Install a single sentinel browser-history entry on mount. When the user
-  // hits the browser back button, popstate fires once, we pop exactly ONE
-  // internal step, and we re-push the sentinel so we stay on the page.
-  // Previously we pushed/popped browser history on every goTo, which made the
-  // back button jump multiple steps when the two histories drifted.
+  // Single sentinel browser-history entry so browser-back maps to one internal
+  // step. Previously we pushed an entry per step and the two histories could
+  // drift, causing back to skip multiple steps at once.
   useEffect(() => {
     if (typeof window === "undefined") return;
     window.history.pushState({ lera: true }, "");
@@ -79,15 +79,12 @@ export default function PreScreeningPage() {
         setHistory((h) => (h.length > 1 ? h.slice(0, -1) : h));
         window.history.pushState({ lera: true }, "");
       }
-      // At welcome (length 1): let the browser navigate away naturally.
     };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  // Keyboard nav: Esc / ArrowLeft = back, ArrowRight = primary action.
-  // Suppressed when the user is typing in a text field or using the slider /
-  // combobox, since arrows have native meaning there.
+  // Keyboard: Esc / ArrowLeft = back, ArrowRight = primary action.
   useEffect(() => {
     const isTypingTarget = (el: Element | null): boolean => {
       if (!el) return false;
@@ -122,7 +119,6 @@ export default function PreScreeningPage() {
       }
       if (e.key === "ArrowRight") {
         if (isTypingTarget(document.activeElement)) return;
-        // Click the current screen's primary advance button, if any.
         const btn = document.querySelector<HTMLButtonElement>(
           '[data-primary-action="true"]',
         );
@@ -136,18 +132,41 @@ export default function PreScreeningPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [back]);
 
+  const orderingFor: OrderingFor = state.orderingFor ?? "self";
+
+  const postMedicareLead = async () => {
+    if (!state.email) return;
+    try {
+      await fetch("/api/lead-list", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: state.email.trim(),
+          reason: "medicare_medicaid",
+          capturedAt: new Date().toISOString(),
+        }),
+      });
+    } catch {
+      // non-blocking
+    }
+  };
+
   const submitQualified = async () => {
     const payload: PreScreeningPayload = {
+      email: state.email.trim(),
       gender: state.gender!,
+      orderingFor,
       feelLikeSelf: state.feelLikeSelf!,
       symptoms: state.symptoms,
+      otherSymptomText: state.symptoms.includes("other")
+        ? state.otherSymptomText.trim() || undefined
+        : undefined,
       device: state.device!,
       location: state.location!,
       age: state.age,
       medicareMedicaid: state.medicareMedicaid!,
       firstName: state.firstName.trim(),
       lastName: state.lastName.trim(),
-      email: state.email.trim(),
       outcome: "qualified",
       completedAt: new Date().toISOString(),
     };
@@ -165,10 +184,8 @@ export default function PreScreeningPage() {
     goTo("success");
   };
 
-  // Progress through the qualified path only; non-qualified terminals hide
-  // the bar and the counter. We count step 1..totalSteps across the screens
-  // between (but not including) welcome and success so the counter lands on
-  // "1 / 12" the moment the user leaves welcome and "12 / 12" on email.
+  // Progress: count qualified-path step position. "loved-one" sits outside
+  // the list since only the loved-one branch visits it.
   const qualifiedIndex = QUALIFIED_STEPS.indexOf(
     current as (typeof QUALIFIED_STEPS)[number],
   );
@@ -178,13 +195,22 @@ export default function PreScreeningPage() {
   const progress =
     qualifiedIndex >= 0 ? qualifiedIndex / (QUALIFIED_STEPS.length - 1) : 0;
   const showProgress = !HIDE_PROGRESS_ON.includes(current);
-  const showBack =
-    history.length > 1 && current !== "gender-reject" && current !== "success";
+  const showBack = history.length > 1 && current !== "success";
 
   const render = () => {
     switch (current) {
       case "welcome":
-        return <Welcome key="welcome" onNext={() => goTo("gender")} />;
+        return <Welcome key="welcome" onNext={() => goTo("email")} />;
+
+      case "email":
+        return (
+          <Email
+            key="email"
+            value={state.email}
+            onChange={(v) => setState((s) => ({ ...s, email: v }))}
+            onNext={() => goTo("gender")}
+          />
+        );
 
       case "gender":
         return (
@@ -193,13 +219,39 @@ export default function PreScreeningPage() {
             value={state.gender}
             onSelect={(g: GenderT) => {
               setState((s) => ({ ...s, gender: g }));
-              goTo(g === "woman" ? "transition" : "gender-reject");
+              // Women continue straight to the flow; men get the loved-one
+              // branch so we can capture them either way.
+              goTo(g === "woman" ? "transition" : "loved-one");
             }}
           />
         );
 
-      case "gender-reject":
-        return <GenderReject key="gender-reject" />;
+      case "loved-one":
+        return (
+          <LovedOne
+            key="loved-one"
+            onSelect={(v: YesNo) => {
+              if (v === "yes") {
+                setState((s) => ({ ...s, orderingFor: "loved_one" }));
+                goTo("transition");
+              } else {
+                goTo("men-lead");
+              }
+            }}
+          />
+        );
+
+      case "men-lead":
+        return (
+          <LeadCapture
+            key="men-lead"
+            heading="We\u2019ll keep you posted."
+            body="We\u2019re building something for men. We\u2019ll reach out the moment it\u2019s ready."
+            cta="Keep me posted"
+            reason="men_waitlist"
+            prefilledEmail={state.email || undefined}
+          />
+        );
 
       case "transition":
         return (
@@ -214,6 +266,7 @@ export default function PreScreeningPage() {
           <SymptomOpener
             key="symptom-opener"
             value={state.feelLikeSelf}
+            orderingFor={orderingFor}
             onAnswer={(v: FeelLikeSelf) => {
               setState((s) => ({ ...s, feelLikeSelf: v }));
               goTo("symptom-multi");
@@ -226,21 +279,33 @@ export default function PreScreeningPage() {
           <SymptomMultiSelect
             key="symptom-multi"
             value={state.symptoms}
+            otherText={state.otherSymptomText}
+            orderingFor={orderingFor}
             onChange={(next: SymptomId[]) =>
               setState((s) => ({ ...s, symptoms: next }))
+            }
+            onOtherTextChange={(v) =>
+              setState((s) => ({ ...s, otherSymptomText: v }))
             }
             onContinue={() => goTo("pivot")}
           />
         );
 
       case "pivot":
-        return <Pivot key="pivot" onNext={() => goTo("device")} />;
+        return (
+          <Pivot
+            key="pivot"
+            orderingFor={orderingFor}
+            onNext={() => goTo("device")}
+          />
+        );
 
       case "device":
         return (
           <Device
             key="device"
             value={state.device}
+            orderingFor={orderingFor}
             onSelect={(d: DeviceT) => {
               setState((s) => ({ ...s, device: d }));
               goTo(d === "iphone" ? "location" : "device-lead");
@@ -253,9 +318,10 @@ export default function PreScreeningPage() {
           <LeadCapture
             key="device-lead"
             heading="Android is on our roadmap."
-            body="Leave your email and we'll tell you the moment LERA lands on Android."
+            body="We\u2019ll tell you the moment LERA lands on Android."
             cta="Count me in"
             reason="android"
+            prefilledEmail={state.email || undefined}
           />
         );
 
@@ -264,12 +330,14 @@ export default function PreScreeningPage() {
           <Location
             key="location"
             value={state.location}
+            orderingFor={orderingFor}
             onSelect={(code) => {
               setState((s) => ({ ...s, location: code }));
-              // Service area: available everywhere (including international)
-              // EXCEPT NY and NJ. Only NY/NJ falls out to a lead capture.
-              if (code === "NY" || code === "NJ") goTo("location-lead-state");
-              else goTo("age");
+              // NY/NJ go through the full rich-profile flow, every other state
+              // hands over to the early lead capture, international is its own.
+              if (code === OUTSIDE_US) goTo("location-lead-intl");
+              else if (code === "NY" || code === "NJ") goTo("age");
+              else goTo("location-lead-state");
             }}
           />
         );
@@ -279,10 +347,23 @@ export default function PreScreeningPage() {
           <LeadCapture
             key="location-lead-state"
             heading={`We\u2019re not in ${stateName(state.location ?? "")} yet, but we\u2019re coming.`}
-            body="Leave your email and we'll let you know when LERA reaches you."
+            body="We\u2019ll let you know the moment LERA reaches you."
             cta="Count me in"
             reason="location"
             state={state.location}
+            prefilledEmail={state.email || undefined}
+          />
+        );
+
+      case "location-lead-intl":
+        return (
+          <LeadCapture
+            key="location-lead-intl"
+            heading="LERA is US-only right now."
+            body="We\u2019ll be in touch when we expand internationally."
+            cta="Count me in"
+            reason="outside_us"
+            prefilledEmail={state.email || undefined}
           />
         );
 
@@ -291,6 +372,7 @@ export default function PreScreeningPage() {
           <Age
             key="age"
             value={state.age}
+            orderingFor={orderingFor}
             onChange={(v) => setState((s) => ({ ...s, age: v }))}
             onNext={() => goTo("insurance")}
           />
@@ -301,21 +383,21 @@ export default function PreScreeningPage() {
           <Insurance
             key="insurance"
             value={state.medicareMedicaid}
+            orderingFor={orderingFor}
             onSelect={(v: YesNo) => {
               setState((s) => ({ ...s, medicareMedicaid: v }));
-              goTo(v === "yes" ? "insurance-lead" : "first-name");
+              goTo(v === "yes" ? "insurance-info" : "first-name");
             }}
           />
         );
 
-      case "insurance-lead":
+      case "insurance-info":
         return (
-          <LeadCapture
-            key="insurance-lead"
-            heading="LERA isn't covered by Medicare or Medicaid yet."
-            body="If that changes, we'd like to tell you. Leave your email if you'd like to stay in touch."
-            cta="Keep me posted"
-            reason="medicare_medicaid"
+          <InsuranceInfo
+            key="insurance-info"
+            orderingFor={orderingFor}
+            onContinue={() => goTo("first-name")}
+            onOptOut={postMedicareLead}
           />
         );
 
@@ -324,6 +406,7 @@ export default function PreScreeningPage() {
           <FirstName
             key="first-name"
             value={state.firstName}
+            orderingFor={orderingFor}
             onChange={(v) => setState((s) => ({ ...s, firstName: v }))}
             onNext={() => goTo("last-name")}
           />
@@ -334,23 +417,20 @@ export default function PreScreeningPage() {
           <LastName
             key="last-name"
             value={state.lastName}
+            orderingFor={orderingFor}
             onChange={(v) => setState((s) => ({ ...s, lastName: v }))}
-            onNext={() => goTo("email")}
-          />
-        );
-
-      case "email":
-        return (
-          <Email
-            key="email"
-            value={state.email}
-            onChange={(v) => setState((s) => ({ ...s, email: v }))}
-            onSubmit={submitQualified}
+            onNext={submitQualified}
           />
         );
 
       case "success":
-        return <Success key="success" firstName={state.firstName || "there"} />;
+        return (
+          <Success
+            key="success"
+            firstName={state.firstName || "there"}
+            orderingFor={orderingFor}
+          />
+        );
 
       default:
         return null;

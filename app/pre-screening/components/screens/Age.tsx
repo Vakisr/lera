@@ -1,21 +1,21 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { AgeSlider } from "../AgeSlider";
+import { AgeInput } from "../AgeInput";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading } from "../Screen";
+import type { OrderingFor } from "../../types";
 
 type Props = {
   value: number;
   onChange: (v: number) => void;
   onNext: () => void;
+  orderingFor: OrderingFor;
 };
 
-export function Age({ value, onChange, onNext }: Props) {
+export function Age({ value, onChange, onNext, orderingFor }: Props) {
   const ageInputRef = useRef<HTMLInputElement>(null);
 
-  // Autofocus + select the age field so users can type over the default or
-  // arrow-key through the slider via Tab.
   useEffect(() => {
     const el = ageInputRef.current;
     if (el) {
@@ -24,13 +24,10 @@ export function Age({ value, onChange, onNext }: Props) {
     }
   }, []);
 
-  // Enter advances from anywhere on this screen.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Enter") {
         e.preventDefault();
-        // Commit any partial text by blurring first, so the parent
-        // sees the final clamped value before we navigate away.
         ageInputRef.current?.blur();
         onNext();
       }
@@ -39,14 +36,14 @@ export function Age({ value, onChange, onNext }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onNext]);
 
+  const heading =
+    orderingFor === "loved_one" ? "How old is she?" : "How old are you?";
+
   return (
     <Screen>
-      <ScreenHeading>How old are you?</ScreenHeading>
-      <p className="mt-3 text-sm text-forest/55">
-        Type a number or use the slider.
-      </p>
-      <div className="mt-10">
-        <AgeSlider value={value} onChange={onChange} inputRef={ageInputRef} />
+      <ScreenHeading>{heading}</ScreenHeading>
+      <div className="mt-12">
+        <AgeInput value={value} onChange={onChange} inputRef={ageInputRef} />
       </div>
       <div className="mt-12">
         <PrimaryButton onClick={onNext}>Continue</PrimaryButton>
