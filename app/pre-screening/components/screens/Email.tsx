@@ -38,7 +38,7 @@ export function Email({ value, onChange, onSubmit }: Props) {
   return (
     <Screen>
       <ScreenHeading>Where can we reach you?</ScreenHeading>
-      <ScreenSub>We&apos;ll send a short email to confirm next steps. No spam, ever.</ScreenSub>
+      <ScreenSub>We&apos;ll use this to save your progress and send next steps. No spam, ever.</ScreenSub>
       <form className="mt-10 space-y-6" onSubmit={handle}>
         <EmailInput
           ref={ref}
@@ -52,7 +52,7 @@ export function Email({ value, onChange, onSubmit }: Props) {
           {showError ? "That email doesn't look quite right." : ""}
         </div>
         <PrimaryButton type="submit" disabled={!valid || submitting}>
-          {submitting ? "Sending\u2026" : "Finish"}
+          {submitting ? "Sending\u2026" : "Continue"}
         </PrimaryButton>
       </form>
     </Screen>

@@ -14,6 +14,7 @@ import { FirstName } from "./components/screens/FirstName";
 import { Gender } from "./components/screens/Gender";
 import { GenderReject } from "./components/screens/GenderReject";
 import { Insurance } from "./components/screens/Insurance";
+import { InsuranceNotice } from "./components/screens/InsuranceNotice";
 import { LastName } from "./components/screens/LastName";
 import { LeadCapture } from "./components/screens/LeadCapture";
 import { Location } from "./components/screens/Location";
@@ -27,6 +28,7 @@ import { Welcome } from "./components/screens/Welcome";
 import {
   HIDE_PROGRESS_ON,
   QUALIFIED_STEPS,
+  SOMETHING_ELSE_ID,
   stateName,
   type Device as DeviceT,
   type FeelLikeSelf,
@@ -40,6 +42,7 @@ import {
 
 const initialState: PreScreeningState = {
   symptoms: [],
+  symptomOther: "",
   age: 35,
   firstName: "",
   lastName: "",
@@ -137,10 +140,13 @@ export default function PreScreeningPage() {
   }, [back]);
 
   const submitQualified = async () => {
+    const includesOther = state.symptoms.includes(SOMETHING_ELSE_ID);
+    const other = state.symptomOther.trim();
     const payload: PreScreeningPayload = {
       gender: state.gender!,
       feelLikeSelf: state.feelLikeSelf!,
       symptoms: state.symptoms,
+      ...(includesOther && other ? { symptomOther: other } : {}),
       device: state.device!,
       location: state.location!,
       age: state.age,
@@ -168,7 +174,7 @@ export default function PreScreeningPage() {
   // Progress through the qualified path only; non-qualified terminals hide
   // the bar and the counter. We count step 1..totalSteps across the screens
   // between (but not including) welcome and success so the counter lands on
-  // "1 / 12" the moment the user leaves welcome and "12 / 12" on email.
+  // "1 / N" the moment the user leaves welcome and "N / N" on the last step.
   const qualifiedIndex = QUALIFIED_STEPS.indexOf(
     current as (typeof QUALIFIED_STEPS)[number],
   );
@@ -184,7 +190,17 @@ export default function PreScreeningPage() {
   const render = () => {
     switch (current) {
       case "welcome":
-        return <Welcome key="welcome" onNext={() => goTo("gender")} />;
+        return <Welcome key="welcome" onNext={() => goTo("email")} />;
+
+      case "email":
+        return (
+          <Email
+            key="email"
+            value={state.email}
+            onChange={(v) => setState((s) => ({ ...s, email: v }))}
+            onSubmit={() => goTo("gender")}
+          />
+        );
 
       case "gender":
         return (
@@ -229,6 +245,10 @@ export default function PreScreeningPage() {
             onChange={(next: SymptomId[]) =>
               setState((s) => ({ ...s, symptoms: next }))
             }
+            otherText={state.symptomOther}
+            onOtherTextChange={(v) =>
+              setState((s) => ({ ...s, symptomOther: v }))
+            }
             onContinue={() => goTo("pivot")}
           />
         );
@@ -253,9 +273,10 @@ export default function PreScreeningPage() {
           <LeadCapture
             key="device-lead"
             heading="Android is on our roadmap."
-            body="Leave your email and we'll tell you the moment LERA lands on Android."
+            body="We’ll use the email you gave us to tell you the moment LERA lands on Android."
             cta="Count me in"
             reason="android"
+            prefilledEmail={state.email}
           />
         );
 
@@ -278,11 +299,12 @@ export default function PreScreeningPage() {
         return (
           <LeadCapture
             key="location-lead-state"
-            heading={`We\u2019re not in ${stateName(state.location ?? "")} yet, but we\u2019re coming.`}
-            body="Leave your email and we'll let you know when LERA reaches you."
+            heading={`We’re not in ${stateName(state.location ?? "")} yet, but we’re coming.`}
+            body="We’ll use the email you gave us to let you know when LERA reaches you."
             cta="Count me in"
             reason="location"
             state={state.location}
+            prefilledEmail={state.email}
           />
         );
 
@@ -303,19 +325,16 @@ export default function PreScreeningPage() {
             value={state.medicareMedicaid}
             onSelect={(v: YesNo) => {
               setState((s) => ({ ...s, medicareMedicaid: v }));
-              goTo(v === "yes" ? "insurance-lead" : "first-name");
+              goTo(v === "yes" ? "insurance-notice" : "first-name");
             }}
           />
         );
 
-      case "insurance-lead":
+      case "insurance-notice":
         return (
-          <LeadCapture
-            key="insurance-lead"
-            heading="LERA isn't covered by Medicare or Medicaid yet."
-            body="If that changes, we'd like to tell you. Leave your email if you'd like to stay in touch."
-            cta="Keep me posted"
-            reason="medicare_medicaid"
+          <InsuranceNotice
+            key="insurance-notice"
+            onContinue={() => goTo("first-name")}
           />
         );
 
@@ -335,17 +354,7 @@ export default function PreScreeningPage() {
             key="last-name"
             value={state.lastName}
             onChange={(v) => setState((s) => ({ ...s, lastName: v }))}
-            onNext={() => goTo("email")}
-          />
-        );
-
-      case "email":
-        return (
-          <Email
-            key="email"
-            value={state.email}
-            onChange={(v) => setState((s) => ({ ...s, email: v }))}
-            onSubmit={submitQualified}
+            onNext={submitQualified}
           />
         );
 

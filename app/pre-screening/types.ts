@@ -9,22 +9,29 @@ export type SymptomId =
   | "focus"
   | "weight"
   | "cycles_flashes"
-  | "postpartum"
-  | "something_shifted";
+  | "bloated"
+  | "pregnancy_struggle"
+  | "migraines"
+  | "something_else";
 
 export const SYMPTOM_OPTIONS: { id: SymptomId; label: string }[] = [
   { id: "tired", label: "Tired in a way sleep doesn\u2019t fix" },
   { id: "focus", label: "The focus you used to have is gone" },
   { id: "weight", label: "Weight that won\u2019t shift" },
   { id: "cycles_flashes", label: "Cycles feel off, hot flashes, or night sweats" },
-  { id: "postpartum", label: "Post-partum and not bouncing back" },
-  { id: "something_shifted", label: "Something\u2019s shifted, I can\u2019t name it" },
+  { id: "bloated", label: "Bloated all the time" },
+  { id: "pregnancy_struggle", label: "Struggling to get pregnant" },
+  { id: "migraines", label: "Migraines that won\u2019t budge" },
+  { id: "something_else", label: "Something else" },
 ];
+
+export const SOMETHING_ELSE_ID: SymptomId = "something_else";
 
 export type PreScreeningState = {
   gender?: Gender;
   feelLikeSelf?: FeelLikeSelf;
   symptoms: SymptomId[];
+  symptomOther: string;
   device?: Device;
   location?: string;
   age: number;
@@ -41,6 +48,7 @@ export type PreScreeningPayload = {
   gender: Gender;
   feelLikeSelf: FeelLikeSelf;
   symptoms: SymptomId[];
+  symptomOther?: string;
   device: Device;
   location: string; // two-letter state code, or "outside_us"
   age: number;
@@ -52,7 +60,7 @@ export type PreScreeningPayload = {
   completedAt: string;
 };
 
-export type LeadReason = "android" | "location" | "medicare_medicaid";
+export type LeadReason = "android" | "location";
 
 export type LeadListPayload = {
   email: string;
@@ -65,6 +73,7 @@ export type LeadListPayload = {
 // the progress bar and the forward/back transitions.
 export const QUALIFIED_STEPS = [
   "welcome",
+  "email",
   "gender",
   "transition",
   "symptom-opener",
@@ -76,7 +85,6 @@ export const QUALIFIED_STEPS = [
   "insurance",
   "first-name",
   "last-name",
-  "email",
   "success",
 ] as const;
 
@@ -85,14 +93,13 @@ export type StepId =
   | "gender-reject"
   | "device-lead"
   | "location-lead-state"
-  | "insurance-lead";
+  | "insurance-notice";
 
 export const HIDE_PROGRESS_ON: StepId[] = [
   "welcome",
   "gender-reject",
   "device-lead",
   "location-lead-state",
-  "insurance-lead",
   "success",
 ];
 

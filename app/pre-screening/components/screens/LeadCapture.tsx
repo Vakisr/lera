@@ -12,17 +12,62 @@ type Props = {
   cta: string;
   reason: LeadReason;
   state?: string;
+  /** Email already captured earlier in the flow; when provided the
+   *  screen auto-submits and skips the form entirely. */
+  prefilledEmail?: string;
 };
 
-export function LeadCapture({ heading, body, cta, reason, state }: Props) {
+export function LeadCapture({
+  heading,
+  body,
+  cta,
+  reason,
+  state,
+  prefilledEmail,
+}: Props) {
   const ref = useRef<HTMLInputElement>(null);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(prefilledEmail ?? "");
   const [touched, setTouched] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
 
+  const hasValidPrefill = !!prefilledEmail && isValidEmail(prefilledEmail);
+
+  const postLead = async (value: string) => {
+    await fetch("/api/lead-list", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: value.trim(),
+        reason,
+        ...(state ? { state } : {}),
+        capturedAt: new Date().toISOString(),
+      }),
+    });
+  };
+
+  // Auto-submit on mount when we already captured the email upstream.
+  // Runs exactly once; prefilledEmail is treated as a mount-time value.
   useEffect(() => {
-    ref.current?.focus();
+    if (!hasValidPrefill) {
+      ref.current?.focus();
+      return;
+    }
+    let cancelled = false;
+    setSubmitting(true);
+    postLead(prefilledEmail!)
+      .catch(() => {
+        // Swallow: we still want to thank the user.
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setSubmitting(false);
+        setDone(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const valid = isValidEmail(email);
@@ -34,16 +79,7 @@ export function LeadCapture({ heading, body, cta, reason, state }: Props) {
     if (!valid || submitting) return;
     setSubmitting(true);
     try {
-      await fetch("/api/lead-list", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          reason,
-          ...(state ? { state } : {}),
-          capturedAt: new Date().toISOString(),
-        }),
-      });
+      await postLead(email);
       setDone(true);
     } finally {
       setSubmitting(false);
@@ -66,6 +102,21 @@ export function LeadCapture({ heading, body, cta, reason, state }: Props) {
     );
   }
 
+  // While we auto-submit a prefilled email, show the heading with a quiet
+  // status line rather than the form. Keeps the page from flashing an empty
+  // input the user would only have to re-fill.
+  if (hasValidPrefill) {
+    return (
+      <Screen>
+        <ScreenHeading>{heading}</ScreenHeading>
+        <ScreenSub>{body}</ScreenSub>
+        <p className="mt-10 text-sm text-forest/55" aria-live="polite">
+          Saving your spot…
+        </p>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
       <ScreenHeading>{heading}</ScreenHeading>
@@ -83,7 +134,7 @@ export function LeadCapture({ heading, body, cta, reason, state }: Props) {
           {showError ? "That email doesn't look quite right." : ""}
         </div>
         <PrimaryButton type="submit" disabled={!valid || submitting}>
-          {submitting ? "Sending\u2026" : cta}
+          {submitting ? "Sending…" : cta}
         </PrimaryButton>
       </form>
     </Screen>

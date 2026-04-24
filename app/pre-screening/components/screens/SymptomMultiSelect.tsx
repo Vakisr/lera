@@ -1,23 +1,41 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { LetterBadge } from "../ChoiceButtons";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading, ScreenSub } from "../Screen";
-import { SYMPTOM_OPTIONS, type SymptomId } from "../../types";
+import { TextInput } from "../TextInput";
+import { SOMETHING_ELSE_ID, SYMPTOM_OPTIONS, type SymptomId } from "../../types";
 
 const LETTERS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K"];
 
 type Props = {
   value: SymptomId[];
   onChange: (next: SymptomId[]) => void;
+  otherText: string;
+  onOtherTextChange: (v: string) => void;
   onContinue: () => void;
 };
 
-export function SymptomMultiSelect({ value, onChange, onContinue }: Props) {
+export function SymptomMultiSelect({
+  value,
+  onChange,
+  otherText,
+  onOtherTextChange,
+  onContinue,
+}: Props) {
+  const otherRef = useRef<HTMLInputElement>(null);
+  const showOther = value.includes(SOMETHING_ELSE_ID);
+
   const toggle = (id: SymptomId) => {
     onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
   };
+
+  // When "Something else" is freshly selected, drop focus into the text input
+  // so users can type immediately without a second click.
+  useEffect(() => {
+    if (showOther) otherRef.current?.focus();
+  }, [showOther]);
 
   // Keyboard: A..K toggles the matching option, Enter continues.
   useEffect(() => {
@@ -69,6 +87,24 @@ export function SymptomMultiSelect({ value, onChange, onContinue }: Props) {
           );
         })}
       </div>
+
+      {showOther && (
+        <div className="mt-5">
+          <TextInput
+            ref={otherRef}
+            placeholder="Tell us what you’re noticing"
+            value={otherText}
+            onChange={(e) => onOtherTextChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                onContinue();
+              }
+            }}
+            aria-label="Describe your symptom"
+          />
+        </div>
+      )}
 
       <div className="mt-8 flex items-center gap-4">
         <PrimaryButton onClick={onContinue} autoFocus>
