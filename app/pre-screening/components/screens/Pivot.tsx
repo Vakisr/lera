@@ -3,33 +3,22 @@
 import { motion } from "framer-motion";
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen } from "../Screen";
-import type { OrderingFor } from "../../types";
 
-const SELF_PARAGRAPHS = [
-  "These feelings aren't \u201Cjust life.\u201D And they aren't in your head.",
-  "LERA runs a full biomarker diagnostic designed specifically for women to understand what's actually happening in your body. We use this data to build a plan that adapts to you.",
-  "You've been listening to your body. We'll help you understand what it's been saying.",
-];
-
-const LOVED_ONE_PARAGRAPHS = [
-  "These feelings aren't \u201Cjust life.\u201D And they aren't in her head.",
-  "LERA runs a full biomarker diagnostic designed specifically for women to understand what's actually happening in her body. We use this data to build a plan that adapts to her.",
-  "She's been listening to her body. We'll help her understand what it's been saying.",
+const PARAGRAPHS = [
+  "These feelings aren’t “just life.” And they aren’t in your head.",
+  "Lera looks at the full picture — your hormones, gut, metabolism, and more — to understand what’s actually going on in your body. Then we build a plan that adapts to you.",
+  "You’ve been listening to your body. We’ll help you understand what it’s been saying.",
 ];
 
 type Props = {
   onNext: () => void;
-  orderingFor: OrderingFor;
 };
 
-export function Pivot({ onNext, orderingFor }: Props) {
-  const paragraphs =
-    orderingFor === "loved_one" ? LOVED_ONE_PARAGRAPHS : SELF_PARAGRAPHS;
-
+export function Pivot({ onNext }: Props) {
   return (
     <Screen>
       <div className="space-y-6 text-lg leading-relaxed text-forest/90 sm:text-xl">
-        {paragraphs.map((p, i) => (
+        {PARAGRAPHS.map((p, i) => (
           <motion.p
             key={i}
             initial={{ opacity: 0, y: 8 }}
@@ -47,7 +36,7 @@ export function Pivot({ onNext, orderingFor }: Props) {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 + paragraphs.length * 0.2, duration: 0.3 }}
+        transition={{ delay: 0.25 + PARAGRAPHS.length * 0.2, duration: 0.3 }}
         className="mt-10"
       >
         <PrimaryButton onClick={onNext} autoFocus>

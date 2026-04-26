@@ -78,8 +78,7 @@ export type LeadReason =
   | "android"
   | "location"
   | "outside_us"
-  | "medicare_medicaid"
-  | "men_waitlist";
+  | "medicare_medicaid";
 
 export type LeadListPayload = {
   email: string;
@@ -88,13 +87,10 @@ export type LeadListPayload = {
   capturedAt: string;
 };
 
-// Ordered list of step IDs for the qualified path. Email now comes second
-// so we capture a lead on anyone who makes it past the welcome screen.
-// "loved-one" sits outside this list because it's a side-spur only men see.
+// Ordered list of step IDs for the qualified path. Email comes first
+// so we capture a lead on anyone who makes it past the home page.
 export const QUALIFIED_STEPS = [
-  "welcome",
   "email",
-  "gender",
   "transition",
   "symptom-opener",
   "symptom-multi",
@@ -110,8 +106,6 @@ export const QUALIFIED_STEPS = [
 
 export type StepId =
   | (typeof QUALIFIED_STEPS)[number]
-  | "loved-one"
-  | "men-lead"
   | "device-lead"
   | "location-lead-state"
   | "location-lead-intl"
@@ -119,9 +113,6 @@ export type StepId =
 
 // Steps where the top progress bar and step counter are hidden.
 export const HIDE_PROGRESS_ON: StepId[] = [
-  "welcome",
-  "loved-one",
-  "men-lead",
   "device-lead",
   "location-lead-state",
   "location-lead-intl",

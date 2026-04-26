@@ -24,9 +24,9 @@ export function SymptomOpener({ value, onAnswer, orderingFor }: Props) {
           value={value}
           onSelect={onAnswer}
           options={[
-            { value: "yes", label: "Yes" },
-            { value: "not_quite", label: "Not quite" },
-            { value: "no", label: "No" },
+            { value: "yes", label: "Mostly" },
+            { value: "not_quite", label: "Not really" },
+            { value: "no", label: "No, something's off" },
           ]}
         />
       </div>

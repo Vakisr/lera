@@ -85,10 +85,8 @@ export function LeadCapture({
   if (done) {
     return (
       <Screen>
-        <ScreenHeading>Thank you.</ScreenHeading>
-        <ScreenSub>
-          We&rsquo;ll be in touch the moment we have news.
-        </ScreenSub>
+        <ScreenHeading>{heading}</ScreenHeading>
+        <ScreenSub>{body}</ScreenSub>
         <div className="mt-10">
           <PrimaryButton onClick={() => (window.location.href = "/")} autoFocus>
             Back to home
@@ -98,13 +96,11 @@ export function LeadCapture({
     );
   }
 
-  // prefilledEmail + not done means the POST is in flight. Brief spinner-ish
-  // heading so users see something rather than a flash of the form.
   if (prefilledEmail) {
     return (
       <Screen>
         <ScreenHeading>{heading}</ScreenHeading>
-        <ScreenSub>Saving your spot&hellip;</ScreenSub>
+        <ScreenSub>{body}</ScreenSub>
       </Screen>
     );
   }

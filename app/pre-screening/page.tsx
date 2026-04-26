@@ -11,20 +11,16 @@ import { Age } from "./components/screens/Age";
 import { Device } from "./components/screens/Device";
 import { Email } from "./components/screens/Email";
 import { FirstName } from "./components/screens/FirstName";
-import { Gender } from "./components/screens/Gender";
 import { Insurance } from "./components/screens/Insurance";
 import { InsuranceInfo } from "./components/screens/InsuranceInfo";
 import { LastName } from "./components/screens/LastName";
 import { LeadCapture } from "./components/screens/LeadCapture";
 import { Location } from "./components/screens/Location";
-import { LovedOne } from "./components/screens/LovedOne";
 import { Pivot } from "./components/screens/Pivot";
 import { Success } from "./components/screens/Success";
 import { SymptomMultiSelect } from "./components/screens/SymptomMultiSelect";
 import { SymptomOpener } from "./components/screens/SymptomOpener";
 import { Transition as TransitionScreen } from "./components/screens/Transition";
-import { Welcome } from "./components/screens/Welcome";
-
 import {
   HIDE_PROGRESS_ON,
   OUTSIDE_US,
@@ -32,7 +28,6 @@ import {
   stateName,
   type Device as DeviceT,
   type FeelLikeSelf,
-  type Gender as GenderT,
   type OrderingFor,
   type PreScreeningPayload,
   type PreScreeningState,
@@ -43,6 +38,8 @@ import {
 
 const initialState: PreScreeningState = {
   email: "",
+  gender: "woman",
+  orderingFor: "self",
   symptoms: [],
   otherSymptomText: "",
   age: 35,
@@ -52,7 +49,7 @@ const initialState: PreScreeningState = {
 
 export default function PreScreeningPage() {
   const [state, setState] = useState<PreScreeningState>(initialState);
-  const [history, setHistory] = useState<StepId[]>(["welcome"]);
+  const [history, setHistory] = useState<StepId[]>(["email"]);
   const current = history[history.length - 1];
 
   const goTo = useCallback((next: StepId) => {
@@ -189,9 +186,9 @@ export default function PreScreeningPage() {
   const qualifiedIndex = QUALIFIED_STEPS.indexOf(
     current as (typeof QUALIFIED_STEPS)[number],
   );
-  const totalCountedSteps = QUALIFIED_STEPS.length - 2; // exclude welcome + success
+  const totalCountedSteps = QUALIFIED_STEPS.length - 1; // exclude success
   const currentStepNumber =
-    qualifiedIndex > 0 ? Math.min(qualifiedIndex, totalCountedSteps) : 0;
+    qualifiedIndex >= 0 ? Math.min(qualifiedIndex + 1, totalCountedSteps) : 0;
   const progress =
     qualifiedIndex >= 0 ? qualifiedIndex / (QUALIFIED_STEPS.length - 1) : 0;
   const showProgress = !HIDE_PROGRESS_ON.includes(current);
@@ -199,57 +196,13 @@ export default function PreScreeningPage() {
 
   const render = () => {
     switch (current) {
-      case "welcome":
-        return <Welcome key="welcome" onNext={() => goTo("email")} />;
-
       case "email":
         return (
           <Email
             key="email"
             value={state.email}
             onChange={(v) => setState((s) => ({ ...s, email: v }))}
-            onNext={() => goTo("gender")}
-          />
-        );
-
-      case "gender":
-        return (
-          <Gender
-            key="gender"
-            value={state.gender}
-            onSelect={(g: GenderT) => {
-              setState((s) => ({ ...s, gender: g }));
-              // Women continue straight to the flow; men get the loved-one
-              // branch so we can capture them either way.
-              goTo(g === "woman" ? "transition" : "loved-one");
-            }}
-          />
-        );
-
-      case "loved-one":
-        return (
-          <LovedOne
-            key="loved-one"
-            onSelect={(v: YesNo) => {
-              if (v === "yes") {
-                setState((s) => ({ ...s, orderingFor: "loved_one" }));
-                goTo("transition");
-              } else {
-                goTo("men-lead");
-              }
-            }}
-          />
-        );
-
-      case "men-lead":
-        return (
-          <LeadCapture
-            key="men-lead"
-            heading="We\u2019ll keep you posted."
-            body="We\u2019re building something for men. We\u2019ll reach out the moment it\u2019s ready."
-            cta="Keep me posted"
-            reason="men_waitlist"
-            prefilledEmail={state.email || undefined}
+            onNext={() => goTo("transition")}
           />
         );
 
@@ -292,13 +245,7 @@ export default function PreScreeningPage() {
         );
 
       case "pivot":
-        return (
-          <Pivot
-            key="pivot"
-            orderingFor={orderingFor}
-            onNext={() => goTo("device")}
-          />
-        );
+        return <Pivot key="pivot" onNext={() => goTo("device")} />;
 
       case "device":
         return (
@@ -318,7 +265,7 @@ export default function PreScreeningPage() {
           <LeadCapture
             key="device-lead"
             heading="Android is on our roadmap."
-            body="We\u2019ll tell you the moment LERA lands on Android."
+            body="We'll tell you the moment LERA lands on Android."
             cta="Count me in"
             reason="android"
             prefilledEmail={state.email || undefined}
@@ -333,11 +280,9 @@ export default function PreScreeningPage() {
             orderingFor={orderingFor}
             onSelect={(code) => {
               setState((s) => ({ ...s, location: code }));
-              // NY/NJ go through the full rich-profile flow, every other state
-              // hands over to the early lead capture, international is its own.
               if (code === OUTSIDE_US) goTo("location-lead-intl");
-              else if (code === "NY" || code === "NJ") goTo("age");
-              else goTo("location-lead-state");
+              else if (code === "NY" || code === "NJ") goTo("location-lead-state");
+              else goTo("age");
             }}
           />
         );
@@ -346,8 +291,8 @@ export default function PreScreeningPage() {
         return (
           <LeadCapture
             key="location-lead-state"
-            heading={`We\u2019re not in ${stateName(state.location ?? "")} yet, but we\u2019re coming.`}
-            body="We\u2019ll let you know the moment LERA reaches you."
+            heading={`Legislation currently doesn\u2019t allow us to service the ${stateName(state.location ?? "")} area.`}
+            body={`We\u2019re working on it and will be in touch as soon as the state of ${stateName(state.location ?? "")} allows for full biomarker tests for women.`}
             cta="Count me in"
             reason="location"
             state={state.location}
@@ -360,7 +305,7 @@ export default function PreScreeningPage() {
           <LeadCapture
             key="location-lead-intl"
             heading="LERA is US-only right now."
-            body="We\u2019ll be in touch when we expand internationally."
+            body="We'll be in touch when we expand internationally."
             cta="Count me in"
             reason="outside_us"
             prefilledEmail={state.email || undefined}

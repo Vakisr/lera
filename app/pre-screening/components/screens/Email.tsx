@@ -31,9 +31,9 @@ export function Email({ value, onChange, onNext }: Props) {
 
   return (
     <Screen>
-      <ScreenHeading>What&rsquo;s your email?</ScreenHeading>
+      <ScreenHeading>Where should we send your results?</ScreenHeading>
       <ScreenSub>
-        So we can stay in touch if life interrupts before you&rsquo;re done. No spam, ever.
+        We&rsquo;ll save your progress here so you can pick up anytime.
       </ScreenSub>
       <form className="mt-10 space-y-6" onSubmit={submit}>
         <EmailInput

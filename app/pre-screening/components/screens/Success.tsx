@@ -42,15 +42,17 @@ export function Success({ firstName, orderingFor }: Props) {
     <Screen center={false} wide>
       <ScreenHeading>{heading}</ScreenHeading>
 
-      <p className="mt-8 text-lg text-forest/80">Here&rsquo;s what your membership includes:</p>
+      <p className="mt-6 max-w-xl text-lg text-forest/70">
+        Here&rsquo;s what your membership includes.
+      </p>
 
-      <Section
-        label="What\u2019s included in your $549 upfront"
-        items={UPFRONT}
-      />
-      <Section label="What\u2019s included in your $29/month" items={MONTHLY} />
+      <div className="mt-12 rounded-2xl border border-forest/10 bg-cream/40 p-8 sm:p-10">
+        <Tier name="Onboarding" price="$549 once" items={UPFRONT} />
+        <div className="my-8 h-px bg-forest/10" />
+        <Tier name="Membership" price="$29 / month" items={MONTHLY} />
+      </div>
 
-      <p className="mt-8 text-sm text-forest/60">
+      <p className="mt-6 text-sm text-forest/55">
         $549 upfront, then $29/month for 12 months. FSA/HSA eligible.
       </p>
 
@@ -66,23 +68,24 @@ export function Success({ firstName, orderingFor }: Props) {
   );
 }
 
-function Section({ label, items }: { label: string; items: string[] }) {
+function Tier({
+  name,
+  price,
+  items,
+}: {
+  name: string;
+  price: string;
+  items: string[];
+}) {
   return (
-    <div className="mt-8">
-      <h2 className="font-display text-base uppercase tracking-[0.15em] text-leaf-600">
-        {label}
-      </h2>
-      <ul className="mt-4 space-y-3">
+    <div>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <h2 className="font-display text-xl text-forest sm:text-2xl">{name}</h2>
+        <span className="text-base text-forest/55">{price}</span>
+      </div>
+      <ul className="mt-5 space-y-2.5 text-base text-forest/85 sm:text-lg">
         {items.map((item) => (
-          <li
-            key={item}
-            className="flex gap-3 text-base text-forest/90 sm:text-lg"
-          >
-            <span aria-hidden className="mt-0.5 text-leaf-600">
-              &rarr;
-            </span>
-            <span className="flex-1">{item}</span>
-          </li>
+          <li key={item}>{item}</li>
         ))}
       </ul>
     </div>
