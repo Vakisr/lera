@@ -12,7 +12,7 @@ export default function Home() {
       </p>
       <Link
         href="/pre-screening"
-        className="mt-10 inline-flex items-center rounded-pill bg-forest px-8 py-4 text-base font-medium text-cream transition hover:bg-forest-800"
+        className="mt-10 inline-flex items-center rounded-pill bg-leaf-600 px-8 py-4 text-base font-medium text-forest transition hover:bg-leaf-600/90"
       >
         See if LERA&rsquo;s a fit
       </Link>

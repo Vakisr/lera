@@ -20,7 +20,7 @@ export function PrimaryButton({
     "inline-flex min-h-[56px] items-center justify-center gap-3 rounded-pill px-7 py-3 text-base font-medium transition disabled:cursor-not-allowed disabled:opacity-40";
   const styles =
     variant === "primary"
-      ? "bg-forest text-cream hover:bg-forest-800"
+      ? "bg-leaf-600 text-forest hover:bg-leaf-600/90"
       : "bg-transparent text-forest hover:bg-forest/5";
   return (
     <button
@@ -38,7 +38,7 @@ function EnterBadge() {
   return (
     <span
       aria-hidden
-      className="flex h-7 w-7 items-center justify-center rounded-md border border-cream/30 bg-cream/15 text-cream"
+      className="flex h-7 w-7 items-center justify-center rounded-md border border-forest/20 bg-forest/10 text-forest"
     >
       {/* carriage return / enter glyph */}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
