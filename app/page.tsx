@@ -14,7 +14,7 @@ export default function Home() {
         href="/pre-screening"
         className="mt-10 inline-flex items-center rounded-pill bg-forest px-8 py-4 text-base font-medium text-cream transition hover:bg-forest-800"
       >
-        Build my plan
+        See if Lera&rsquo;s right for you
       </Link>
       <p className="mt-4 text-sm text-forest/55">This takes about 2 minutes</p>
     </main>

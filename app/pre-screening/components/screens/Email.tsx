@@ -31,9 +31,9 @@ export function Email({ value, onChange, onNext }: Props) {
 
   return (
     <Screen>
-      <ScreenHeading>Where should we send your results?</ScreenHeading>
+      <ScreenHeading>What&rsquo;s your email?</ScreenHeading>
       <ScreenSub>
-        We&rsquo;ll save your progress here so you can pick up anytime.
+        We&rsquo;ll save your progress and use what you tell us to check if Lera&rsquo;s a fit.
       </ScreenSub>
       <form className="mt-10 space-y-6" onSubmit={submit}>
         <EmailInput

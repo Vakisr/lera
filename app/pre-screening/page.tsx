@@ -373,7 +373,6 @@ export default function PreScreeningPage() {
           <Success
             key="success"
             firstName={state.firstName || "there"}
-            orderingFor={orderingFor}
           />
         );
 
