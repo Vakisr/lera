@@ -22,6 +22,7 @@
   // the enrollments table is insert-only via RLS.
   "vars": {
     "SUPABASE_URL": "https://fihvjahevjxgkkihbjni.supabase.co",
-    "SUPABASE_ANON_KEY": "sb_publishable_Zt_1Kfvj5qgPIVn1AtIczw_YTSC0gM8"
+    "SUPABASE_ANON_KEY": "sb_publishable_Zt_1Kfvj5qgPIVn1AtIczw_YTSC0gM8",
+    "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyBvBNrbTls1cbcSjjt6DanZZ3bB33c_FmI"
   }
 }
