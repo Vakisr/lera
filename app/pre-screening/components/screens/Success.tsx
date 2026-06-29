@@ -7,12 +7,8 @@ import { Screen, ScreenHeading } from "../Screen";
 
 type Props = {
   firstName: string;
+  email?: string;
 };
-
-// Stripe Checkout session for the qualified-lead handoff. Hardcoded for now.
-// Move to an env var once we have a real price/test split.
-const STRIPE_CHECKOUT_URL =
-  "https://checkout.stripe.com/c/pay/cs_test_b1EbFMC4xkJiV7wr0d4B6SumzlbglruLHCvaDTuJ2phiYPeE9Jg6Zk5VVI#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2JwZGZkaGppYFNkd2xka3EnPydmamtxd2ppJyknZHVsTmB8Jz8ndW5acWB2cVowNFdNbWZmN1BETnUwTkFcaDJvXHY0cnRWdW1fXDBRT3BXazJ8cGhwVndBdjZ2UkRicVFhaTZ3Sjd%2Fd0lTV3ZEZjdAc2EzZmRtXWYxTX90PTdDSk9HXUd2MDU1MHB1aktjSDQnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmNGQ2YDdjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl";
 
 const HIGHLIGHTS = [
   { title: "Whole-body testing", detail: "Blood, saliva, and gut" },
@@ -36,23 +32,24 @@ const MONTHLY = [
   "Progress tracking and symptom monitoring",
 ];
 
-export function Success({ firstName }: Props) {
-  const goToCheckout = () => {
-    window.location.href = STRIPE_CHECKOUT_URL;
+export function Success({ firstName, email }: Props) {
+  const goToEnrollment = () => {
+    const query = email ? `?email=${encodeURIComponent(email)}` : "";
+    window.location.href = `/enroll${query}`;
   };
 
   return (
-    <Screen center={false} wide>
+    <Screen center={false} xwide>
       <ScreenHeading>Welcome to Lera, {firstName}.</ScreenHeading>
 
-      <p className="mt-6 max-w-xl text-lg text-forest/75">
+      <p className="mt-3 text-lg text-forest/75">
         Based on what you shared, your testing will look at hormones + gut + metabolism + brain.
       </p>
 
       {/* Trust highlights */}
-      <div className="mt-10 grid grid-cols-1 divide-y divide-forest/10 overflow-hidden rounded-2xl border border-forest/10 bg-cream-50 shadow-soft sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div className="mt-6 grid grid-cols-1 divide-y divide-forest/10 overflow-hidden rounded-2xl border border-forest/10 bg-cream-50 shadow-soft sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         {HIGHLIGHTS.map((h) => (
-          <div key={h.title} className="px-6 py-5 text-center">
+          <div key={h.title} className="px-6 py-4 text-center">
             <p className="font-display text-base text-forest">{h.title}</p>
             <p className="mt-1 text-sm text-forest/55">{h.detail}</p>
           </div>
@@ -60,7 +57,7 @@ export function Success({ firstName }: Props) {
       </div>
 
       {/* Two-step plan */}
-      <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-stretch md:gap-0">
+      <div className="mt-6 flex flex-col gap-5 md:flex-row md:items-stretch md:gap-0">
         <Tier
           step="Step 1"
           name="Initial Assessment & Testing"
@@ -84,10 +81,10 @@ export function Success({ firstName }: Props) {
         />
       </div>
 
-      <div className="mt-10">
-        <PrimaryButton onClick={goToCheckout} autoFocus>
+      <div className="mt-8">
+        <PrimaryButton onClick={goToEnrollment} autoFocus>
           <span className="inline-flex items-center gap-2">
-            Continue to checkout
+            Continue to enrollment
             <span aria-hidden>&rarr;</span>
           </span>
         </PrimaryButton>
@@ -126,7 +123,7 @@ function Tier({
   note: string;
 }) {
   return (
-    <div className="flex flex-1 flex-col rounded-2xl border border-forest/10 bg-cream-50 p-7 shadow-soft sm:p-9">
+    <div className="flex flex-1 flex-col rounded-2xl border border-forest/10 bg-cream-50 p-7 shadow-soft sm:p-8">
       <span className="inline-flex w-fit items-center rounded-pill bg-mint-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-forest/70">
         {step}
       </span>
@@ -134,7 +131,7 @@ function Tier({
       <h2 className="mt-5 font-display text-2xl text-forest">{name}</h2>
       <p className="mt-2 text-base text-forest/60">{blurb}</p>
 
-      <ul className="mt-6 space-y-3.5">
+      <ul className="mt-5 space-y-3">
         {items.map((item) => (
           <li key={item} className="flex items-start gap-3 text-base text-forest/90">
             <Check />
@@ -143,9 +140,9 @@ function Tier({
         ))}
       </ul>
 
-      <div className="mt-auto pt-8">
+      <div className="mt-auto pt-6">
         <div className="h-px bg-forest/10" />
-        <div className="mt-6 flex items-baseline gap-2">
+        <div className="mt-5 flex items-baseline gap-2">
           <span className="font-display text-4xl text-forest sm:text-5xl">{price}</span>
           <span className="text-base text-forest/55">{cadence}</span>
         </div>

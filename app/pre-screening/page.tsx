@@ -373,6 +373,7 @@ export default function PreScreeningPage() {
           <Success
             key="success"
             firstName={state.firstName || "there"}
+            email={state.email || undefined}
           />
         );
 

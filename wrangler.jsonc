@@ -17,5 +17,11 @@
   },
   "observability": {
     "enabled": true
+  },
+  // Supabase (LERA Health project). The publishable key is safe to expose;
+  // the enrollments table is insert-only via RLS.
+  "vars": {
+    "SUPABASE_URL": "https://fihvjahevjxgkkihbjni.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_Zt_1Kfvj5qgPIVn1AtIczw_YTSC0gM8"
   }
 }
