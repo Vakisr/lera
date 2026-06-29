@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading } from "../Screen";
 
@@ -11,6 +13,12 @@ type Props = {
 // Move to an env var once we have a real price/test split.
 const STRIPE_CHECKOUT_URL =
   "https://checkout.stripe.com/c/pay/cs_test_b1EbFMC4xkJiV7wr0d4B6SumzlbglruLHCvaDTuJ2phiYPeE9Jg6Zk5VVI#fidnandhYHdWcXxpYCc%2FJ2FgY2RwaXEnKSd2cGd2ZndsdXFsamtQa2x0cGBrYHZ2QGtkZ2lgYSc%2FY2RpdmApJ2JwZGZkaGppYFNkd2xka3EnPydmamtxd2ppJyknZHVsTmB8Jz8ndW5acWB2cVowNFdNbWZmN1BETnUwTkFcaDJvXHY0cnRWdW1fXDBRT3BXazJ8cGhwVndBdjZ2UkRicVFhaTZ3Sjd%2Fd0lTV3ZEZjdAc2EzZmRtXWYxTX90PTdDSk9HXUd2MDU1MHB1aktjSDQnKSdjd2poVmB3c2B3Jz9xd3BgKSdnZGZuYndqcGthRmppancnPycmNGQ2YDdjJyknaWR8anBxUXx1YCc%2FJ2hwaXFsWmxxYGgnKSdga2RnaWBVaWRmYG1qaWFgd3YnP3F3cGB4JSUl";
+
+const HIGHLIGHTS = [
+  { title: "Whole-body testing", detail: "Blood, saliva, and gut" },
+  { title: "A coach every day", detail: "Less than $1 a day" },
+  { title: "Built for women", detail: "22 years of practice" },
+];
 
 const TESTING = [
   "Blood testing",
@@ -41,19 +49,40 @@ export function Success({ firstName }: Props) {
         Based on what you shared, your testing will look at hormones + gut + metabolism + brain.
       </p>
 
-      <p className="mt-2 max-w-xl text-base text-forest/60">
-        Here&rsquo;s what your membership includes.
-      </p>
-
-      <div className="mt-10 rounded-2xl border border-forest/10 bg-cream/40 p-8 sm:p-10">
-        <Tier name="Initial Assessment & Testing" price="$549 one-time" items={TESTING} />
-        <div className="my-8 h-px bg-forest/10" />
-        <Tier name="Daily Health Coach" price="$29 / month" items={MONTHLY} />
+      {/* Trust highlights */}
+      <div className="mt-10 grid grid-cols-1 divide-y divide-forest/10 overflow-hidden rounded-2xl border border-forest/10 bg-cream-50 shadow-soft sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        {HIGHLIGHTS.map((h) => (
+          <div key={h.title} className="px-6 py-5 text-center">
+            <p className="font-display text-base text-forest">{h.title}</p>
+            <p className="mt-1 text-sm text-forest/55">{h.detail}</p>
+          </div>
+        ))}
       </div>
 
-      <p className="mt-6 text-sm text-forest/55">
-        $549 one-time, then $29/month. HSA/FSA eligible &mdash; less than $1 a day.
-      </p>
+      {/* Two-step plan */}
+      <div className="mt-8 flex flex-col gap-5 md:flex-row md:items-stretch md:gap-0">
+        <Tier
+          step="Step 1"
+          name="Initial Assessment & Testing"
+          blurb="Your journey starts with a comprehensive look at your health."
+          items={TESTING}
+          price="$549"
+          cadence="one-time"
+          note="HSA/FSA eligible."
+        />
+
+        <Divider />
+
+        <Tier
+          step="Step 2"
+          name="Daily Health Coach"
+          blurb="Your health partner through every life stage."
+          items={MONTHLY}
+          price="$29"
+          cadence="/month"
+          note="HSA/FSA eligible. Less than $1 a day."
+        />
+      </div>
 
       <div className="mt-10">
         <PrimaryButton onClick={goToCheckout} autoFocus>
@@ -67,26 +96,77 @@ export function Success({ firstName }: Props) {
   );
 }
 
+function Divider() {
+  return (
+    <div className="relative flex items-center justify-center md:w-16">
+      {/* Vertical line on desktop, horizontal on mobile */}
+      <div className="absolute inset-x-0 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-leaf/30 via-forest/10 to-coral/30 md:inset-x-auto md:inset-y-6 md:left-1/2 md:top-auto md:h-auto md:w-px md:-translate-x-1/2 md:translate-y-0 md:bg-gradient-to-b" />
+      <span className="relative bg-cream px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-forest/45 md:rotate-180 md:px-1 md:py-3 md:[writing-mode:vertical-rl]">
+        Then ongoing
+      </span>
+    </div>
+  );
+}
+
 function Tier({
+  step,
   name,
-  price,
+  blurb,
   items,
+  price,
+  cadence,
+  note,
 }: {
+  step: string;
   name: string;
-  price: string;
+  blurb: string;
   items: string[];
+  price: string;
+  cadence: string;
+  note: string;
 }) {
   return (
-    <div>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <h2 className="font-display text-xl text-forest sm:text-2xl">{name}</h2>
-        <span className="text-base text-forest/55">{price}</span>
-      </div>
-      <ul className="mt-5 space-y-2.5 text-base text-forest/85 sm:text-lg">
+    <div className="flex flex-1 flex-col rounded-2xl border border-forest/10 bg-cream-50 p-7 shadow-soft sm:p-9">
+      <span className="inline-flex w-fit items-center rounded-pill bg-mint-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-forest/70">
+        {step}
+      </span>
+
+      <h2 className="mt-5 font-display text-2xl text-forest">{name}</h2>
+      <p className="mt-2 text-base text-forest/60">{blurb}</p>
+
+      <ul className="mt-6 space-y-3.5">
         {items.map((item) => (
-          <li key={item}>{item}</li>
+          <li key={item} className="flex items-start gap-3 text-base text-forest/90">
+            <Check />
+            <span>{item}</span>
+          </li>
         ))}
       </ul>
+
+      <div className="mt-auto pt-8">
+        <div className="h-px bg-forest/10" />
+        <div className="mt-6 flex items-baseline gap-2">
+          <span className="font-display text-4xl text-forest sm:text-5xl">{price}</span>
+          <span className="text-base text-forest/55">{cadence}</span>
+        </div>
+        <p className="mt-2 text-sm text-forest/55">{note}</p>
+      </div>
     </div>
+  );
+}
+
+function Check(): ReactNode {
+  return (
+    <span className="mt-0.5 flex h-5 w-5 flex-none items-center justify-center rounded-full bg-mint-100 text-forest">
+      <svg viewBox="0 0 12 12" className="h-3 w-3" fill="none" aria-hidden>
+        <path
+          d="M2.5 6.2 4.8 8.5 9.5 3.5"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   );
 }
