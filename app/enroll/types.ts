@@ -15,6 +15,7 @@ export const emptyAddress: Address = {
 };
 
 export type EnrollStepId =
+  | "email"
   | "member-agreement"
   | "telehealth-consent"
   | "consents"
@@ -67,4 +68,9 @@ export function isAddressComplete(a: Address): boolean {
 /** Loose US phone check: at least 10 digits. */
 export function isPhoneValid(phone: string): boolean {
   return phone.replace(/\D/g, "").length >= 10;
+}
+
+/** Loose email check (presence of a local part, @, and a dotted domain). */
+export function isEmailValid(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }

@@ -1,13 +1,16 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import { PrimaryButton } from "../PrimaryButton";
 import { Screen, ScreenHeading } from "../Screen";
+import type { FlowMode } from "../../PreScreeningFlow";
 
 type Props = {
   firstName: string;
   email?: string;
+  lastName?: string;
+  mode?: FlowMode;
 };
 
 const HIGHLIGHTS = [
@@ -32,10 +35,31 @@ const MONTHLY = [
   "Progress tracking and symptom monitoring",
 ];
 
-export function Success({ firstName, email }: Props) {
+export function Success({ firstName, email, lastName, mode = "enroll" }: Props) {
+  const [joining, setJoining] = useState(false);
+  const [joined, setJoined] = useState(false);
+
   const goToEnrollment = () => {
     const query = email ? `?email=${encodeURIComponent(email)}` : "";
     window.location.href = `/enroll${query}`;
+  };
+
+  const joinWaitlist = async () => {
+    if (joining || joined) return;
+    setJoining(true);
+    try {
+      await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, firstName, lastName }),
+      });
+      setJoined(true);
+    } catch {
+      // Non-blocking — still show confirmation so the user isn't stranded.
+      setJoined(true);
+    } finally {
+      setJoining(false);
+    }
   };
 
   return (
@@ -81,14 +105,34 @@ export function Success({ firstName, email }: Props) {
         />
       </div>
 
-      <div className="mt-8">
-        <PrimaryButton onClick={goToEnrollment} autoFocus>
-          <span className="inline-flex items-center gap-2">
-            Continue to enrollment
-            <span aria-hidden>&rarr;</span>
-          </span>
-        </PrimaryButton>
-      </div>
+      {mode === "waitlist" ? (
+        joined ? (
+          <div className="mt-8 rounded-2xl border border-leaf/30 bg-mint-50 p-6">
+            <p className="font-display text-xl text-forest">You&rsquo;re on the list.</p>
+            <p className="mt-2 text-base text-forest/70">
+              Thanks, {firstName}. We&rsquo;ll email you at {email} the moment a spot opens up.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-8">
+            <PrimaryButton onClick={joinWaitlist} disabled={joining} autoFocus>
+              <span className="inline-flex items-center gap-2">
+                {joining ? "Signing you up…" : "Sign up to the waitlist"}
+                <span aria-hidden>&rarr;</span>
+              </span>
+            </PrimaryButton>
+          </div>
+        )
+      ) : (
+        <div className="mt-8">
+          <PrimaryButton onClick={goToEnrollment} autoFocus>
+            <span className="inline-flex items-center gap-2">
+              Continue to enrollment
+              <span aria-hidden>&rarr;</span>
+            </span>
+          </PrimaryButton>
+        </div>
+      )}
     </Screen>
   );
 }

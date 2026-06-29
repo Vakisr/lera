@@ -1,8 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
-import type { Database } from "../../enroll/database.types";
-
 type Address = {
   line1?: string;
   line2?: string;
@@ -47,7 +45,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
-  // Required consents must be present.
+  // Full submit requires all consents.
   if (
     !body.agreedMemberAgreement ||
     !body.agreedTelehealth ||
@@ -61,11 +59,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const supabase = createClient<Database>(url, anonKey);
+  const supabase = createClient(url, anonKey);
   const shipping = body.shipping ?? {};
   const billing = body.billingSameAsShipping ? shipping : (body.billing ?? {});
 
-  const row: Database["public"]["Tables"]["enrollments"]["Insert"] = {
+  // snake_case payload consumed by the upsert_enrollment(jsonb) function.
+  const p = {
     email: body.email ?? null,
     first_name: body.firstName ?? null,
     last_name: body.lastName ?? null,
@@ -93,12 +92,9 @@ export async function POST(request: Request) {
     status: "submitted",
   };
 
-  // No .select() / RETURNING: the table is write-only (insert-only RLS, no SELECT
-  // policy), so requesting a representation would trip the SELECT policy check.
-  const { error } = await supabase.from("enrollments").insert(row);
-
+  const { error } = await supabase.rpc("upsert_enrollment", { p });
   if (error) {
-    console.error("[enroll] insert failed:", error.message);
+    console.error("[enroll] upsert failed:", error.message);
     return NextResponse.json({ ok: false, error: "insert_failed" }, { status: 500 });
   }
 
