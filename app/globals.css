@@ -87,15 +87,6 @@ input[type="range"].lera-slider::-moz-range-thumb {
     #fff7ef;
 }
 
-/* Google Places address search (new PlaceAutocompleteElement). Match the cream
-   inputs and let it span the field width. */
-.lera-place-search gmp-place-autocomplete {
-  width: 100%;
-  /* The element ships color-scheme: light dark; force light so it doesn't
-     render a dark bar when the OS/browser prefers dark. */
-  color-scheme: light;
-}
-
 /* Hide number input spinners (for the age field, if we ever fall back) */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
