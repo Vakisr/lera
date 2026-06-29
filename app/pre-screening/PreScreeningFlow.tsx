@@ -21,6 +21,7 @@ import { Success } from "./components/screens/Success";
 import { SymptomMultiSelect } from "./components/screens/SymptomMultiSelect";
 import { SymptomOpener } from "./components/screens/SymptomOpener";
 import { Transition as TransitionScreen } from "./components/screens/Transition";
+import { Welcome } from "./components/screens/Welcome";
 import {
   HIDE_PROGRESS_ON,
   OUTSIDE_US,
@@ -51,7 +52,11 @@ const initialState: PreScreeningState = {
 
 export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
   const [state, setState] = useState<PreScreeningState>(initialState);
-  const [history, setHistory] = useState<StepId[]>(["email"]);
+  // The standalone waitlist flow opens with the hero slide (no home page before
+  // it); the main funnel arrives from the home page and starts at the email step.
+  const [history, setHistory] = useState<StepId[]>(
+    mode === "waitlist" ? ["welcome"] : ["email"],
+  );
   const current = history[history.length - 1];
 
   const goTo = useCallback((next: StepId) => {
@@ -198,6 +203,9 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
 
   const render = () => {
     switch (current) {
+      case "welcome":
+        return <Welcome key="welcome" onStart={() => goTo("email")} />;
+
       case "email":
         return (
           <Email

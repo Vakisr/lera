@@ -106,6 +106,7 @@ export const QUALIFIED_STEPS = [
 
 export type StepId =
   | (typeof QUALIFIED_STEPS)[number]
+  | "welcome"
   | "device-lead"
   | "location-lead-state"
   | "location-lead-intl"
@@ -113,6 +114,7 @@ export type StepId =
 
 // Steps where the top progress bar and step counter are hidden.
 export const HIDE_PROGRESS_ON: StepId[] = [
+  "welcome",
   "device-lead",
   "location-lead-state",
   "location-lead-intl",
