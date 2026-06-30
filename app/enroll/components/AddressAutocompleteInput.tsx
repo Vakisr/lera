@@ -3,14 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 
 import { TextInput } from "../../pre-screening/components/TextInput";
-import { loadGoogleMaps, parseAddressComponents, type ParsedAddress } from "../googleMaps";
+import type { ParsedAddress } from "../parseAddress";
 
-type Suggestion = {
-  id: string;
-  label: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  prediction: any;
-};
+type Suggestion = { placeId: string; label: string };
 
 type Props = {
   id: string;
@@ -20,9 +15,9 @@ type Props = {
   onSelectAddress: (parsed: ParsedAddress) => void;
 };
 
-/** Address line 1 input with Google Places (new API) suggestions in a styled
- *  dropdown. Selecting a suggestion fills the rest of the address. Falls back to
- *  a plain input when no API key is configured. */
+/** Address line 1 input with Google Places suggestions, fetched through our
+ *  server-side proxy (/api/places/*) so the API key never reaches the browser.
+ *  Degrades to a plain input if the proxy returns nothing. */
 export function AddressAutocompleteInput({
   id,
   value,
@@ -34,16 +29,15 @@ export function AddressAutocompleteInput({
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tokenRef = useRef<any>(null);
+  const sessionRef = useRef<string | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seqRef = useRef(0);
 
-  // Start loading the Maps script early so the first keystroke is responsive.
-  useEffect(() => {
-    loadGoogleMaps();
-  }, []);
+  const newSession = () =>
+    (typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : String(Math.random()).slice(2));
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -59,37 +53,22 @@ export function AddressAutocompleteInput({
       setOpen(false);
       return;
     }
+    if (!sessionRef.current) sessionRef.current = newSession();
     const seq = ++seqRef.current;
-    // Ensure the library is loaded before each lookup (avoids a load-timing
-    // race); loadGoogleMaps caches, so this is cheap after the first call.
-    await loadGoogleMaps();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const g = (window as any).google;
-    const places = g?.maps?.places;
-    if (!places?.AutocompleteSuggestion) return;
-    if (!tokenRef.current) tokenRef.current = new places.AutocompleteSessionToken();
-
     try {
-      const res = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-        input,
-        includedRegionCodes: ["us"],
-        sessionToken: tokenRef.current,
+      const res = await fetch("/api/places/autocomplete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input, sessionToken: sessionRef.current }),
       });
-      if (seq !== seqRef.current) return; // a newer request superseded this
-      const list: Suggestion[] = (res.suggestions ?? [])
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((s: any) => s.placePrediction)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((s: any) => ({
-          id: s.placePrediction.placeId,
-          label: s.placePrediction.text?.text ?? "",
-          prediction: s.placePrediction,
-        }));
+      const data = (await res.json()) as { suggestions?: Suggestion[] };
+      if (seq !== seqRef.current) return; // superseded by a newer keystroke
+      const list = data.suggestions ?? [];
       setSuggestions(list);
       setOpen(list.length > 0);
       setHighlight(0);
     } catch {
-      /* ignore lookup errors — manual entry still works */
+      /* ignore — manual entry still works */
     }
   };
 
@@ -103,17 +82,17 @@ export function AddressAutocompleteInput({
     setOpen(false);
     setSuggestions([]);
     try {
-      const place = s.prediction.toPlace();
-      await place.fetchFields({ fields: ["addressComponents"] });
-      const parsed = parseAddressComponents(place.addressComponents);
-      if (parsed) onSelectAddress(parsed);
+      const res = await fetch("/api/places/details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ placeId: s.placeId, sessionToken: sessionRef.current }),
+      });
+      const data = (await res.json()) as { address?: ParsedAddress | null };
+      if (data.address) onSelectAddress(data.address);
     } catch {
       /* ignore */
     }
-    // Start a fresh billing session for the next search.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const g = (window as any).google;
-    if (g?.maps?.places) tokenRef.current = new g.maps.places.AutocompleteSessionToken();
+    sessionRef.current = null; // end the billing session
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -125,7 +104,6 @@ export function AddressAutocompleteInput({
       e.preventDefault();
       setHighlight((h) => Math.max(0, h - 1));
     } else if (e.key === "Enter") {
-      // Pick the highlighted suggestion instead of submitting the form.
       e.preventDefault();
       const chosen = suggestions[highlight];
       if (chosen) pick(chosen);
@@ -142,8 +120,6 @@ export function AddressAutocompleteInput({
         role="combobox"
         aria-expanded={open}
         aria-autocomplete="list"
-        // Suppress the browser's native address autofill so our Google
-        // suggestions aren't covered by Chrome's autofill dropdown.
         autoComplete="off"
         autoFocus={autoFocus}
         placeholder="123 Main St"
@@ -161,7 +137,7 @@ export function AddressAutocompleteInput({
         >
           {suggestions.map((s, i) => (
             <li
-              key={s.id || i}
+              key={s.placeId || i}
               role="option"
               aria-selected={i === highlight}
               onMouseEnter={() => setHighlight(i)}
@@ -171,9 +147,7 @@ export function AddressAutocompleteInput({
               }}
               className={[
                 "cursor-pointer px-5 py-3 text-base",
-                i === highlight
-                  ? "bg-mint-50 text-forest"
-                  : "text-forest/80 hover:bg-mint-50",
+                i === highlight ? "bg-mint-50 text-forest" : "text-forest/80 hover:bg-mint-50",
               ].join(" ")}
             >
               {s.label}
