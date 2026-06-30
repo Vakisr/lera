@@ -6,7 +6,7 @@ import { Screen } from "../Screen";
 
 const PARAGRAPHS = [
   "These feelings aren’t “just life.” And they aren’t in your head.",
-  "LERA looks at the full picture — your hormones, gut, metabolism, stress resilience, and brain health — to understand what’s actually going on in your body. Then we build a plan that adapts to you.",
+  "LERA looks at the full picture — your hormones, gut, metabolism, and brain health — to understand what’s actually going on in your body. Then we build a plan that adapts to you.",
   "You’ve been listening to your body. We’ll help you understand what it’s been saying.",
 ];
 

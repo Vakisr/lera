@@ -108,7 +108,7 @@ export function Success({ firstName, email, lastName, mode = "enroll" }: Props) 
       {/* Annual membership footnote */}
       <p className="mt-6 text-sm leading-relaxed text-forest/55">
         This is an annual membership that renews each year — we&rsquo;ll always email you
-        before any renewal, so you can change or cancel.
+        before any renewal so you can change or cancel.
       </p>
 
       {mode === "waitlist" ? (
