@@ -67,7 +67,7 @@ export function Success({ firstName, email, lastName, mode = "enroll" }: Props) 
       <ScreenHeading>Welcome to LERA, {firstName}.</ScreenHeading>
 
       <p className="mt-3 text-lg text-forest/75">
-        Your testing looks at your whole body — hormones, gut, metabolism, stress resilience, and brain health.
+        Our testing looks at your whole body — hormones, gut, metabolism, and brain health.
       </p>
 
       {/* Trust highlights */}
