@@ -40,7 +40,7 @@ export function AddressFields({ value, onChange, idPrefix, autoFocus }: Props) {
         <Label htmlFor={`${idPrefix}-line2`}>Address line 2 (optional)</Label>
         <TextInput
           id={`${idPrefix}-line2`}
-          autoComplete="address-line2"
+          autoComplete="off"
           placeholder="Apt, suite, unit, building"
           value={value.line2}
           onChange={(e) => set({ line2: e.target.value })}
@@ -52,7 +52,7 @@ export function AddressFields({ value, onChange, idPrefix, autoFocus }: Props) {
           <Label htmlFor={`${idPrefix}-city`}>City *</Label>
           <TextInput
             id={`${idPrefix}-city`}
-            autoComplete="address-level2"
+            autoComplete="off"
             placeholder="City"
             value={value.city}
             onChange={(e) => set({ city: e.target.value })}
@@ -73,7 +73,7 @@ export function AddressFields({ value, onChange, idPrefix, autoFocus }: Props) {
         <TextInput
           id={`${idPrefix}-zip`}
           inputMode="numeric"
-          autoComplete="postal-code"
+          autoComplete="off"
           placeholder="12345"
           value={value.zip}
           onChange={(e) => set({ zip: e.target.value })}

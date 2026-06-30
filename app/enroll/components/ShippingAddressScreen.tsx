@@ -20,6 +20,7 @@ export function ShippingAddressScreen({ value, onChange, onContinue }: Props) {
 
       <form
         className="mt-8"
+        autoComplete="off"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid) onContinue();

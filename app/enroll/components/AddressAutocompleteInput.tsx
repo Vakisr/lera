@@ -30,7 +30,6 @@ export function AddressAutocompleteInput({
   onChange,
   onSelectAddress,
 }: Props) {
-  const [ready, setReady] = useState(false);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [highlight, setHighlight] = useState(0);
@@ -41,18 +40,9 @@ export function AddressAutocompleteInput({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seqRef = useRef(0);
 
+  // Start loading the Maps script early so the first keystroke is responsive.
   useEffect(() => {
-    let cancelled = false;
-    loadGoogleMaps().then((ok) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const g = (window as any).google;
-      if (!ok || cancelled || !g?.maps?.places?.AutocompleteSuggestion) return;
-      tokenRef.current = new g.maps.places.AutocompleteSessionToken();
-      setReady(true);
-    });
-    return () => {
-      cancelled = true;
-    };
+    loadGoogleMaps();
   }, []);
 
   useEffect(() => {
@@ -63,39 +53,44 @@ export function AddressAutocompleteInput({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const fetchSuggestions = (input: string) => {
-    if (!ready || input.trim().length < 3) {
+  const fetchSuggestions = async (input: string) => {
+    if (input.trim().length < 3) {
       setSuggestions([]);
       setOpen(false);
       return;
     }
+    const seq = ++seqRef.current;
+    // Ensure the library is loaded before each lookup (avoids a load-timing
+    // race); loadGoogleMaps caches, so this is cheap after the first call.
+    await loadGoogleMaps();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const g = (window as any).google;
-    const seq = ++seqRef.current;
-    g.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-      input,
-      includedRegionCodes: ["us"],
-      sessionToken: tokenRef.current,
-    })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .then((res: any) => {
-        if (seq !== seqRef.current) return; // a newer request superseded this
-        const list: Suggestion[] = (res.suggestions ?? [])
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .filter((s: any) => s.placePrediction)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((s: any) => ({
-            id: s.placePrediction.placeId,
-            label: s.placePrediction.text?.text ?? "",
-            prediction: s.placePrediction,
-          }));
-        setSuggestions(list);
-        setOpen(list.length > 0);
-        setHighlight(0);
-      })
-      .catch(() => {
-        /* ignore lookup errors — manual entry still works */
+    const places = g?.maps?.places;
+    if (!places?.AutocompleteSuggestion) return;
+    if (!tokenRef.current) tokenRef.current = new places.AutocompleteSessionToken();
+
+    try {
+      const res = await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input,
+        includedRegionCodes: ["us"],
+        sessionToken: tokenRef.current,
       });
+      if (seq !== seqRef.current) return; // a newer request superseded this
+      const list: Suggestion[] = (res.suggestions ?? [])
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((s: any) => s.placePrediction)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((s: any) => ({
+          id: s.placePrediction.placeId,
+          label: s.placePrediction.text?.text ?? "",
+          prediction: s.placePrediction,
+        }));
+      setSuggestions(list);
+      setOpen(list.length > 0);
+      setHighlight(0);
+    } catch {
+      /* ignore lookup errors — manual entry still works */
+    }
   };
 
   const onInput = (v: string) => {
@@ -143,10 +138,13 @@ export function AddressAutocompleteInput({
     <div ref={wrapRef} className="relative">
       <TextInput
         id={id}
+        name="lera-address-search"
         role="combobox"
         aria-expanded={open}
         aria-autocomplete="list"
-        autoComplete="address-line1"
+        // Suppress the browser's native address autofill so our Google
+        // suggestions aren't covered by Chrome's autofill dropdown.
+        autoComplete="off"
         autoFocus={autoFocus}
         placeholder="123 Main St"
         value={value}

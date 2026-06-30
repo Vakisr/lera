@@ -29,6 +29,7 @@ export function BillingAddressScreen({
 
       <form
         className="mt-8"
+        autoComplete="off"
         onSubmit={(e) => {
           e.preventDefault();
           if (valid) onContinue();
