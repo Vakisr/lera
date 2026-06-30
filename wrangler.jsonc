@@ -20,9 +20,11 @@
   },
   // Supabase (LERA Health project). The publishable key is safe to expose;
   // the enrollments table is insert-only via RLS.
+  // NOTE: NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is intentionally NOT here — as a
+  // NEXT_PUBLIC_* var it is inlined into the client bundle at build time from
+  // .env.local (gitignored), so it must never be committed to source.
   "vars": {
     "SUPABASE_URL": "https://fihvjahevjxgkkihbjni.supabase.co",
-    "SUPABASE_ANON_KEY": "sb_publishable_Zt_1Kfvj5qgPIVn1AtIczw_YTSC0gM8",
-    "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyBvBNrbTls1cbcSjjt6DanZZ3bB33c_FmI"
+    "SUPABASE_ANON_KEY": "sb_publishable_Zt_1Kfvj5qgPIVn1AtIczw_YTSC0gM8"
   }
 }
