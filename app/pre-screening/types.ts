@@ -12,20 +12,18 @@ export type SymptomId =
   | "cycles_flashes"
   | "pregnancy"
   | "headaches"
-  | "sleep"
   | "mood"
   | "other";
 
 // Labels are written in first-person. The orderingFor === 'loved_one' flow
 // swaps a couple of them for third-person via `symptomLabel` below.
 export const SYMPTOM_OPTIONS: { id: SymptomId; label: string }[] = [
-  { id: "tired", label: "Tired in a way sleep doesn\u2019t fix" },
+  { id: "tired", label: "Trouble sleeping, or tired no matter how much you rest" },
   { id: "focus", label: "The focus you used to have is gone" },
   { id: "weight_bloating", label: "Weight that won\u2019t shift or constant bloating" },
   { id: "cycles_flashes", label: "Cycles feel off, hot flashes, or night sweats" },
   { id: "pregnancy", label: "Struggling to get pregnant" },
   { id: "headaches", label: "Headaches or joint pain" },
-  { id: "sleep", label: "Having trouble sleeping" },
   { id: "mood", label: "Chronic stress, persistent anxiety, or depression" },
   { id: "other", label: "Something else" },
 ];
