@@ -8,11 +8,12 @@ export type OrderingFor = "self" | "loved_one";
 export type SymptomId =
   | "tired"
   | "focus"
-  | "weight"
+  | "weight_bloating"
   | "cycles_flashes"
-  | "bloated"
   | "pregnancy"
-  | "migraines"
+  | "headaches"
+  | "sleep"
+  | "mood"
   | "other";
 
 // Labels are written in first-person. The orderingFor === 'loved_one' flow
@@ -20,11 +21,12 @@ export type SymptomId =
 export const SYMPTOM_OPTIONS: { id: SymptomId; label: string }[] = [
   { id: "tired", label: "Tired in a way sleep doesn\u2019t fix" },
   { id: "focus", label: "The focus you used to have is gone" },
-  { id: "weight", label: "Weight that won\u2019t shift" },
+  { id: "weight_bloating", label: "Weight that won\u2019t shift or constant bloating" },
   { id: "cycles_flashes", label: "Cycles feel off, hot flashes, or night sweats" },
-  { id: "bloated", label: "Bloated all the time" },
   { id: "pregnancy", label: "Struggling to get pregnant" },
-  { id: "migraines", label: "Migraines that won\u2019t budge" },
+  { id: "headaches", label: "Headaches or joint pain" },
+  { id: "sleep", label: "Having trouble sleeping" },
+  { id: "mood", label: "Chronic stress, persistent anxiety, or depression" },
   { id: "other", label: "Something else" },
 ];
 
@@ -48,7 +50,7 @@ export type PreScreeningState = {
   otherSymptomText: string;
   device?: Device;
   location?: string;
-  age: number;
+  dob: string; // ISO date "YYYY-MM-DD"
   medicareMedicaid?: YesNo;
   firstName: string;
   lastName: string;
@@ -66,7 +68,7 @@ export type PreScreeningPayload = {
   otherSymptomText?: string;
   device: Device;
   location: string;
-  age: number;
+  dob: string; // ISO date "YYYY-MM-DD"
   medicareMedicaid: YesNo;
   firstName: string;
   lastName: string;
@@ -97,7 +99,7 @@ export const QUALIFIED_STEPS = [
   "pivot",
   "device",
   "location",
-  "age",
+  "dob",
   "insurance",
   "first-name",
   "last-name",
@@ -110,7 +112,7 @@ export type StepId =
   | "device-lead"
   | "location-lead-state"
   | "location-lead-intl"
-  | "insurance-info";
+  | "insurance-lead";
 
 // Steps where the top progress bar and step counter are hidden.
 export const HIDE_PROGRESS_ON: StepId[] = [
@@ -118,7 +120,7 @@ export const HIDE_PROGRESS_ON: StepId[] = [
   "device-lead",
   "location-lead-state",
   "location-lead-intl",
-  "insurance-info",
+  "insurance-lead",
   "success",
 ];
 

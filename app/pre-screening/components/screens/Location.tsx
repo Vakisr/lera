@@ -19,7 +19,7 @@ export function Location({ value, onSelect, orderingFor }: Props) {
   return (
     <Screen>
       <ScreenHeading>{heading}</ScreenHeading>
-      <ScreenSub>So we know which labs and providers we can connect you with.</ScreenSub>
+      <ScreenSub>So we are sure we can service you today.</ScreenSub>
       <div className="mt-10">
         <StateCombobox value={value} onSelect={onSelect} />
       </div>

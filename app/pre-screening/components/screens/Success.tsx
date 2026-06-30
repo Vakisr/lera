@@ -15,7 +15,7 @@ type Props = {
 
 const HIGHLIGHTS = [
   { title: "Whole-body testing", detail: "Blood, saliva, and gut" },
-  { title: "A coach every day", detail: "Less than $1 a day" },
+  { title: "A partner every day", detail: "Less than $1 a day" },
   { title: "Built for women", detail: "22 years of practice" },
 ];
 
@@ -64,10 +64,10 @@ export function Success({ firstName, email, lastName, mode = "enroll" }: Props) 
 
   return (
     <Screen center={false} xwide>
-      <ScreenHeading>Welcome to Lera, {firstName}.</ScreenHeading>
+      <ScreenHeading>Welcome to LERA, {firstName}.</ScreenHeading>
 
       <p className="mt-3 text-lg text-forest/75">
-        Based on what you shared, your testing will look at hormones + gut + metabolism + brain.
+        Based on what you shared, your testing will look at hormones + gut + metabolism + stress resilience + brain health.
       </p>
 
       {/* Trust highlights */}
@@ -96,13 +96,31 @@ export function Success({ firstName, email, lastName, mode = "enroll" }: Props) 
 
         <Tier
           step="Step 2"
-          name="Daily Health Coach"
+          name="Daily Health Partner"
           blurb="Your health partner through every life stage."
           items={MONTHLY}
           price="$29"
           cadence="/month"
           note="HSA/FSA eligible. Less than $1 a day."
         />
+      </div>
+
+      {/* Annual membership clarity */}
+      <div className="mt-6 rounded-2xl border border-forest/10 bg-cream-50 p-5 shadow-soft sm:p-6">
+        <p className="font-display text-base text-forest">
+          This is an annual membership
+        </p>
+        <ul className="mt-3 space-y-2 text-sm leading-relaxed text-forest/70">
+          <li>
+            One plan covers both parts: your <span className="font-medium text-forest">$549 annual testing</span>{" "}
+            and your <span className="font-medium text-forest">$29/month</span> membership.
+          </li>
+          <li>
+            It renews once a year — <span className="font-medium text-forest">only with your approval</span> — to
+            cover your next round of testing plus the year ahead.
+          </li>
+          <li>We&rsquo;ll always email you before any renewal, and you can change or cancel then. HSA/FSA eligible.</li>
+        </ul>
       </div>
 
       {mode === "waitlist" ? (

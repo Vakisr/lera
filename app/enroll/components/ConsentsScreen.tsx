@@ -35,7 +35,7 @@ export function ConsentsScreen({ value, onChange, onContinue }: Props) {
 
   return (
     <Screen center={false} wide>
-      <ScreenHeading>A few consents</ScreenHeading>
+      <ScreenHeading>A few other consents</ScreenHeading>
       <ScreenSub>Please confirm the following before we continue.</ScreenSub>
 
       <section className="mt-8 space-y-5 rounded-2xl border border-leaf/30 bg-mint-50 p-5 sm:p-7">

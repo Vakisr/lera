@@ -7,12 +7,11 @@ import { BackButton } from "./components/BackButton";
 import { ProgressBar } from "./components/ProgressBar";
 import { StepCounter } from "./components/StepCounter";
 
-import { Age } from "./components/screens/Age";
 import { Device } from "./components/screens/Device";
+import { Dob } from "./components/screens/Dob";
 import { Email } from "./components/screens/Email";
 import { FirstName } from "./components/screens/FirstName";
 import { Insurance } from "./components/screens/Insurance";
-import { InsuranceInfo } from "./components/screens/InsuranceInfo";
 import { LastName } from "./components/screens/LastName";
 import { LeadCapture } from "./components/screens/LeadCapture";
 import { Location } from "./components/screens/Location";
@@ -45,7 +44,7 @@ const initialState: PreScreeningState = {
   orderingFor: "self",
   symptoms: [],
   otherSymptomText: "",
-  age: 35,
+  dob: "",
   firstName: "",
   lastName: "",
 };
@@ -138,23 +137,6 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
 
   const orderingFor: OrderingFor = state.orderingFor ?? "self";
 
-  const postMedicareLead = async () => {
-    if (!state.email) return;
-    try {
-      await fetch("/api/lead-list", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: state.email.trim(),
-          reason: "medicare_medicaid",
-          capturedAt: new Date().toISOString(),
-        }),
-      });
-    } catch {
-      // non-blocking
-    }
-  };
-
   const submitQualified = async () => {
     const payload: PreScreeningPayload = {
       email: state.email.trim(),
@@ -167,7 +149,7 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
         : undefined,
       device: state.device!,
       location: state.location!,
-      age: state.age,
+      dob: state.dob,
       medicareMedicaid: state.medicareMedicaid!,
       firstName: state.firstName.trim(),
       lastName: state.lastName.trim(),
@@ -292,7 +274,7 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
               setState((s) => ({ ...s, location: code }));
               if (code === OUTSIDE_US) goTo("location-lead-intl");
               else if (code === "NY" || code === "NJ") goTo("location-lead-state");
-              else goTo("age");
+              else goTo("dob");
             }}
           />
         );
@@ -302,7 +284,7 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
           <LeadCapture
             key="location-lead-state"
             heading={`Legislation currently doesn’t allow us to service the ${stateName(state.location ?? "")} area.`}
-            body={`We’re working on it and will be in touch as soon as the state of ${stateName(state.location ?? "")} allows for full biomarker tests for women.`}
+            body={`We’re working on it and will be in touch as soon as the state of ${stateName(state.location ?? "")} allows for at-home testing.`}
             cta="Count me in"
             reason="location"
             state={state.location}
@@ -322,13 +304,13 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
           />
         );
 
-      case "age":
+      case "dob":
         return (
-          <Age
-            key="age"
-            value={state.age}
+          <Dob
+            key="dob"
+            value={state.dob}
             orderingFor={orderingFor}
-            onChange={(v) => setState((s) => ({ ...s, age: v }))}
+            onChange={(v) => setState((s) => ({ ...s, dob: v }))}
             onNext={() => goTo("insurance")}
           />
         );
@@ -341,18 +323,20 @@ export function PreScreeningFlow({ mode = "enroll" }: { mode?: FlowMode }) {
             orderingFor={orderingFor}
             onSelect={(v: YesNo) => {
               setState((s) => ({ ...s, medicareMedicaid: v }));
-              goTo(v === "yes" ? "insurance-info" : "first-name");
+              goTo(v === "yes" ? "insurance-lead" : "first-name");
             }}
           />
         );
 
-      case "insurance-info":
+      case "insurance-lead":
         return (
-          <InsuranceInfo
-            key="insurance-info"
-            orderingFor={orderingFor}
-            onContinue={() => goTo("first-name")}
-            onOptOut={postMedicareLead}
+          <LeadCapture
+            key="insurance-lead"
+            heading="LERA isn’t available to Medicare or Medicaid members yet."
+            body="Medicare and Medicaid rules mean we can’t enroll you right now — even out of pocket. We’ll let you know the moment that changes."
+            cta="Keep me posted"
+            reason="medicare_medicaid"
+            prefilledEmail={state.email || undefined}
           />
         );
 
