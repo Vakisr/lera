@@ -16,20 +16,27 @@ export type SymptomId =
   | "other";
 
 // Labels are written in first-person. The orderingFor === 'loved_one' flow
-// swaps a couple of them for third-person via `symptomLabel` below.
+// swaps them for third-person via `symptomLabel` below.
 export const SYMPTOM_OPTIONS: { id: SymptomId; label: string }[] = [
-  { id: "tired", label: "Trouble sleeping, or tired no matter how much you rest" },
-  { id: "focus", label: "The focus you used to have is gone" },
-  { id: "weight_bloating", label: "Weight that won\u2019t shift or constant bloating" },
-  { id: "cycles_flashes", label: "Cycles feel off, hot flashes, or night sweats" },
-  { id: "pregnancy", label: "Struggling to get pregnant" },
-  { id: "headaches", label: "Headaches or joint pain" },
-  { id: "mood", label: "Chronic stress, persistent anxiety, or depression" },
-  { id: "other", label: "Something else" },
+  { id: "tired", label: "I sleep, but I never wake up feeling rested" },
+  { id: "focus", label: "I feel foggy and forgetful, it\u2019s like I\u2019m no longer myself" },
+  { id: "weight_bloating", label: "I know how my body used to feel, but nothing I do gets it back" },
+  { id: "cycles_flashes", label: "My hormones feel all over the place" },
+  { id: "mood", label: "It feels like my moods and anxiety are running the show" },
+  { id: "pregnancy", label: "I want to get pregnant, and it\u2019s just not happening" },
+  { id: "headaches", label: "I am so done with the headaches and aches" },
+  { id: "other", label: "Something is going on, but no one can tell me what" },
 ];
 
 const LOVED_ONE_SYMPTOM_OVERRIDES: Partial<Record<SymptomId, string>> = {
-  focus: "The focus she used to have is gone",
+  tired: "She sleeps, but never wakes up feeling rested",
+  focus: "She feels foggy and forgetful, like she\u2019s no longer herself",
+  weight_bloating: "She knows how her body used to feel, but nothing she does gets it back",
+  cycles_flashes: "Her hormones feel all over the place",
+  mood: "It feels like her moods and anxiety are running the show",
+  pregnancy: "She wants to get pregnant, and it\u2019s just not happening",
+  headaches: "She\u2019s so done with the headaches and aches",
+  other: "Something is going on, but no one can tell her what",
 };
 
 export function symptomLabel(id: SymptomId, orderingFor: OrderingFor): string {
