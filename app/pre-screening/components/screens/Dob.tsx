@@ -69,7 +69,7 @@ export function Dob({ value, onChange, onNext, orderingFor }: Props) {
   return (
     <Screen>
       <ScreenHeading>{heading}</ScreenHeading>
-      <ScreenSub>This helps us tailor your testing and care plan.</ScreenSub>
+      <ScreenSub>Age shapes what we test for and how we read the results.</ScreenSub>
 
       <form
         className="mt-10"
